@@ -76,7 +76,7 @@ const App: React.FC = () => {
       case WidgetType.WELLNESS: return 'Hydration';
       case WidgetType.AI_ASSISTANT: return 'Life Coach';
       case WidgetType.KANBAN: return 'Kanban Board';
-      case WidgetType.REMINDER: return 'Reminders';
+      case WidgetType.REMINDER: return '';
       default: return 'Widget';
     }
   };
