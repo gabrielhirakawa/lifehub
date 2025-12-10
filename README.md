@@ -6,6 +6,8 @@ A centralized personal dashboard designed to streamline your daily life by track
 <img alt="GHBanner" src="./screenshot.png" />
 </div>
 
+![Banner](./screenshot.png)
+
 ## Features
 
 ### 📅 Daily Tasks
