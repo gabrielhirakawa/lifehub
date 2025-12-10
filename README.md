@@ -2,7 +2,9 @@
 
 A centralized personal dashboard designed to streamline your daily life by tracking tasks, habits, notes, and wellness, powered by AI insights.
 
-![LifeHub Dashboard](./screenshot.png)
+<div align="center">
+<img alt="GHBanner" src="./screenshot.png" />
+</div>
 
 ## Features
 
