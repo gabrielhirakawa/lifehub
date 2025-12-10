@@ -1,0 +1,94 @@
+import React, { useState } from 'react';
+import { TodoItem, WidgetData } from '../../types';
+import { Plus, Check, Trash2 } from 'lucide-react';
+
+interface TodoWidgetProps {
+  data: WidgetData;
+  onUpdate: (updatedData: WidgetData) => void;
+}
+
+const TodoWidget: React.FC<TodoWidgetProps> = ({ data, onUpdate }) => {
+  const [newTodo, setNewTodo] = useState('');
+  const todos = data.content?.todos || [];
+
+  const handleAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTodo.trim()) return;
+    const newItem: TodoItem = {
+      id: Date.now().toString(),
+      text: newTodo,
+      completed: false
+    };
+    onUpdate({
+      ...data,
+      content: { ...data.content, todos: [...todos, newItem] }
+    });
+    setNewTodo('');
+  };
+
+  const toggleTodo = (id: string) => {
+    const newTodos = todos.map(t => 
+      t.id === id ? { ...t, completed: !t.completed } : t
+    );
+    onUpdate({
+      ...data,
+      content: { ...data.content, todos: newTodos }
+    });
+  };
+
+  const deleteTodo = (id: string) => {
+    const newTodos = todos.filter(t => t.id !== id);
+    onUpdate({
+      ...data,
+      content: { ...data.content, todos: newTodos }
+    });
+  };
+
+  return (
+    <div className="h-full flex flex-col">
+      <form onSubmit={handleAdd} className="flex gap-2 mb-4">
+        <input
+          type="text"
+          value={newTodo}
+          onChange={(e) => setNewTodo(e.target.value)}
+          placeholder="Add a task..."
+          className="flex-1 px-3 py-1.5 text-sm bg-transparent border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+        />
+        <button type="submit" className="p-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+          <Plus size={18} />
+        </button>
+      </form>
+      
+      <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1">
+        {todos.length === 0 && (
+          <div className="text-center text-slate-400 dark:text-slate-500 text-sm py-4">
+            No tasks yet. Let's get productive!
+          </div>
+        )}
+        {todos.map(todo => (
+          <div key={todo.id} className="group flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <button 
+                onClick={() => toggleTodo(todo.id)}
+                className={`flex-shrink-0 w-5 h-5 rounded border flex items-center justify-center transition-colors ${todo.completed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 dark:border-slate-500 text-transparent hover:border-indigo-400 dark:hover:border-indigo-400'}`}
+              >
+                <Check size={12} />
+              </button>
+              <span className={`text-sm truncate ${todo.completed ? 'text-slate-400 dark:text-slate-500 line-through' : 'text-slate-700 dark:text-slate-200'}`}>
+                {todo.text}
+              </span>
+            </div>
+            <button 
+              onClick={() => deleteTodo(todo.id)}
+              className="text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default TodoWidget;
