@@ -1,20 +1,40 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# LifeHub Dashboard
 
-# Run and deploy your AI Studio app
+A centralized personal dashboard designed to streamline your daily life by tracking tasks, habits, notes, and wellness, powered by AI insights.
 
-This contains everything you need to run your app locally.
+![LifeHub Dashboard](./screenshot.png)
 
-View your app in AI Studio: https://ai.studio/apps/drive/1wl3yI6sQ0FglmWa1f4g_U-9_ISh8eMNS
+## Features
 
-## Run Locally
+### 📅 Daily Tasks
+- **Date-based Tracking**: Manage tasks for Today, Yesterday, and the Day Before.
+- **Smart Rollover**: Unfinished tasks from previous days automatically roll over to "Today" with an overdue indicator.
 
-**Prerequisites:**  Node.js
+### 💧 Hydration Tracker
+- **History Log**: Track water intake across multiple days.
+- **Visual Progress**: Dynamic water level visualization.
 
+### 🤖 AI Coach (Gemini)
+- **Context Aware**: The AI analyzes your current tasks, hydration, and notes to provide personalized advice.
+- **Chat Interface**: Interact directly with your data.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### ⚡ Productivity Tools
+- **Kanban Board**: Drag-and-drop style task management (To Do, Doing, Done).
+- **Notes**: Tabbed interface for multiple notes.
+- **Reminders**: Track upcoming events and deadlines.
+
+## Technologies
+
+- **Frontend**: React 19, TypeScript, Vite
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React
+- **AI**: Google GenAI SDK (`@google/genai`)
+
+## Setup
+
+1. Clone the repository.
+2. Create a `.env` file with your Google Gemini API Key:
+   ```env
+   API_KEY=your_api_key_here
+   ```
+3. Install dependencies and run.
