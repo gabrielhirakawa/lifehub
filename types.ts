@@ -11,6 +11,8 @@ export interface TodoItem {
   id: string;
   text: string;
   completed: boolean;
+  date: string; // YYYY-MM-DD
+  rolledOver?: boolean; // True if moved from a previous day
 }
 
 export interface ReminderItem {
@@ -37,8 +39,16 @@ export interface NoteTab {
   content: string;
 }
 
+export interface WellnessRecord {
+  date: string;
+  amount: number;
+}
+
 export interface WellnessData {
-  waterIntakeMl: number; // in milliliters
+  // We keep this optional for backward compatibility during migration, 
+  // but we primarily use 'history' now.
+  waterIntakeMl?: number; 
+  history?: WellnessRecord[];
 }
 
 export interface WidgetData {

@@ -3,21 +3,28 @@ import Dashboard from './components/Dashboard';
 import { WidgetData, WidgetType } from './types';
 import { LayoutDashboard, Plus, Sun, Moon } from 'lucide-react';
 
+// Helper for initial dates
+const today = new Date().toISOString().split('T')[0];
+
 const DEFAULT_WIDGETS: WidgetData[] = [
   {
     id: '1',
     type: WidgetType.TODO,
     title: 'Daily Tasks',
     content: { todos: [
-      { id: 't1', text: 'Drink water', completed: false },
-      { id: 't2', text: 'Check emails', completed: true }
+      { id: 't1', text: 'Drink water', completed: false, date: today },
+      { id: 't2', text: 'Check emails', completed: true, date: today }
     ] }
   },
   {
     id: '2',
     type: WidgetType.WELLNESS,
     title: 'Hydration',
-    content: { wellness: { waterIntakeMl: 1250 } }
+    content: { 
+      wellness: { 
+        history: [{ date: today, amount: 1250 }] 
+      } 
+    }
   },
   {
     id: '3',

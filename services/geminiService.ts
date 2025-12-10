@@ -4,27 +4,40 @@ import { WidgetData, WidgetType } from "../types";
 const apiKey = process.env.API_KEY || '';
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
+// Helper to get today's date string YYYY-MM-DD
+const getTodayStr = () => {
+  const d = new Date();
+  return d.toISOString().split('T')[0];
+};
+
 export const getGeminiInsight = async (widgets: WidgetData[], userQuery?: string): Promise<string> => {
   if (!ai) {
     return "Please configure your API Key to use the AI features.";
   }
 
   try {
+    const today = getTodayStr();
     // Construct a context summary of the dashboard
-    let dashboardContext = "Here is the current state of the user's LifeHub dashboard:\n";
+    let dashboardContext = `Here is the current state of the user's LifeHub dashboard (Today is ${today}):\n`;
     
     widgets.forEach(w => {
       dashboardContext += `- Widget "${w.title}" (${w.type}):\n`;
       
       if (w.type === WidgetType.TODO) {
-        const completed = w.content?.todos?.filter(t => t.completed).length || 0;
-        const total = w.content?.todos?.length || 0;
-        dashboardContext += `  Status: ${completed}/${total} tasks completed.\n`;
-        const pending = w.content?.todos?.filter(t => !t.completed).map(t => t.text).join(", ");
+        // Filter for today's tasks
+        const todaysTodos = w.content?.todos?.filter(t => t.date === today) || [];
+        const completed = todaysTodos.filter(t => t.completed).length || 0;
+        const total = todaysTodos.length || 0;
+        dashboardContext += `  Status for Today: ${completed}/${total} tasks completed.\n`;
+        const pending = todaysTodos.filter(t => !t.completed).map(t => t.text).join(", ");
         if (pending) dashboardContext += `  Pending tasks: ${pending}\n`;
       
       } else if (w.type === WidgetType.WELLNESS) {
-        dashboardContext += `  Water Consumed: ${w.content?.wellness?.waterIntakeMl || 0}ml.\n`;
+        const history = w.content?.wellness?.history || [];
+        const record = history.find(r => r.date === today);
+        // Fallback to legacy waterIntakeMl if history is empty
+        const amount = record ? record.amount : (w.content?.wellness?.waterIntakeMl || 0);
+        dashboardContext += `  Water Consumed Today: ${amount}ml.\n`;
       
       } else if (w.type === WidgetType.NOTE) {
         // Handle multiple notes

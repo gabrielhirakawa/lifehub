@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { WidgetData } from '../../types';
 import { Droplets, Plus, RotateCcw } from 'lucide-react';
 
@@ -11,21 +11,63 @@ const BLOCK_CAPACITY = 500; // Each square represents 500ml
 const TOTAL_BLOCKS = 10; // 10 * 500 = 5000ml total visually
 
 const WellnessWidget: React.FC<WellnessWidgetProps> = ({ data, onUpdate }) => {
-  const wellness = data.content?.wellness || { waterIntakeMl: 0 };
-  const currentMl = wellness.waterIntakeMl || 0;
+  // Date helpers
+  const getDateStr = (offsetDays: number = 0) => {
+    const d = new Date();
+    d.setDate(d.getDate() - offsetDays);
+    return d.toISOString().split('T')[0];
+  };
 
-  const addWater = (amount: number) => {
+  const todayStr = getDateStr(0);
+  const yesterdayStr = getDateStr(1);
+  const dayBeforeStr = getDateStr(2);
+  
+  const [activeDate, setActiveDate] = useState(todayStr);
+
+  const history = data.content?.wellness?.history || [];
+  
+  // Find record for active date, or default to 0
+  // Migration fallback: if no history but activeDate is today, check legacy waterIntakeMl
+  let currentMl = 0;
+  const activeRecord = history.find(r => r.date === activeDate);
+  
+  if (activeRecord) {
+    currentMl = activeRecord.amount;
+  } else if (activeDate === todayStr && data.content?.wellness?.waterIntakeMl) {
+    // Legacy support for migration
+    currentMl = data.content.wellness.waterIntakeMl;
+  }
+
+  const updateAmountForDate = (date: string, newAmount: number) => {
+    let newHistory = [...history];
+    const existingIndex = history.findIndex(r => r.date === date);
+
+    if (existingIndex >= 0) {
+      newHistory[existingIndex] = { ...newHistory[existingIndex], amount: newAmount };
+    } else {
+      newHistory.push({ date: date, amount: newAmount });
+    }
+
     onUpdate({
       ...data,
-      content: { ...data.content, wellness: { ...wellness, waterIntakeMl: currentMl + amount } }
+      content: { 
+        ...data.content, 
+        wellness: { 
+            ...data.content?.wellness,
+            history: newHistory,
+            // Sync legacy field if updating today for safety
+            waterIntakeMl: date === todayStr ? newAmount : data.content?.wellness?.waterIntakeMl 
+        } 
+      }
     });
   };
 
+  const addWater = (amount: number) => {
+    updateAmountForDate(activeDate, currentMl + amount);
+  };
+
   const resetWater = () => {
-     onUpdate({
-      ...data,
-      content: { ...data.content, wellness: { ...wellness, waterIntakeMl: 0 } }
-    });
+    updateAmountForDate(activeDate, 0);
   };
 
   // Helper to calculate how full a specific block is (0 to 100%)
@@ -35,8 +77,28 @@ const WellnessWidget: React.FC<WellnessWidgetProps> = ({ data, onUpdate }) => {
     return (amountInThisBlock / BLOCK_CAPACITY) * 100;
   };
 
+  const TabButton = ({ date, label }: { date: string, label: string }) => (
+    <button
+      onClick={() => setActiveDate(date)}
+      className={`px-2 py-1 text-[10px] font-medium rounded-lg transition-colors border ${
+        activeDate === date
+          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800'
+          : 'text-slate-500 dark:text-slate-400 border-transparent hover:bg-slate-100 dark:hover:bg-slate-800'
+      }`}
+    >
+      {label}
+    </button>
+  );
+
   return (
     <div className="h-full flex flex-col">
+       {/* Date Tabs (Mini) */}
+      <div className="flex items-center gap-1 mb-2 justify-center bg-slate-50 dark:bg-slate-800/50 p-1 rounded-lg">
+        <TabButton date={dayBeforeStr} label="Day Before" />
+        <TabButton date={yesterdayStr} label="Yesterday" />
+        <TabButton date={todayStr} label="Today" />
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between mb-2 px-1 flex-shrink-0">
         <div className="flex items-center gap-2">
