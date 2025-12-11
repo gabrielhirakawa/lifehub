@@ -7,12 +7,21 @@ export enum WidgetType {
   REMINDER = 'REMINDER'
 }
 
+export type AIProvider = 'gemini' | 'openai' | 'anthropic';
+export type AILanguage = 'pt-br' | 'en-us';
+
+export interface AIConfig {
+  provider: AIProvider;
+  apiKey: string;
+  model: string;
+  language: AILanguage;
+}
+
 export interface TodoItem {
   id: string;
   text: string;
   completed: boolean;
-  date: string; // YYYY-MM-DD
-  rolledOver?: boolean; // True if moved from a previous day
+  archived?: boolean; // Replaces date logic
 }
 
 export interface ReminderItem {
@@ -66,6 +75,8 @@ export interface WidgetData {
     chatHistory?: { role: 'user' | 'model'; text: string }[];
     kanban?: KanbanColumn[];
     reminders?: ReminderItem[];
+    // Optional local override for AI config per widget (or global)
+    aiConfig?: AIConfig; 
   };
 }
 

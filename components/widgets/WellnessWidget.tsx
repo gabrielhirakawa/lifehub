@@ -8,6 +8,7 @@ interface WellnessWidgetProps {
 }
 
 const BLOCK_CAPACITY = 500; // Each square represents 500ml
+const MAX_CAPACITY = 5000; // Max limit 5L
 const TOTAL_BLOCKS = 10; // 10 * 500 = 5000ml total visually
 
 const WellnessWidget: React.FC<WellnessWidgetProps> = ({ data, onUpdate }) => {
@@ -27,7 +28,6 @@ const WellnessWidget: React.FC<WellnessWidgetProps> = ({ data, onUpdate }) => {
   const history = data.content?.wellness?.history || [];
   
   // Find record for active date, or default to 0
-  // Migration fallback: if no history but activeDate is today, check legacy waterIntakeMl
   let currentMl = 0;
   const activeRecord = history.find(r => r.date === activeDate);
   
@@ -39,13 +39,16 @@ const WellnessWidget: React.FC<WellnessWidgetProps> = ({ data, onUpdate }) => {
   }
 
   const updateAmountForDate = (date: string, newAmount: number) => {
+    // Cap at MAX_CAPACITY
+    const cappedAmount = Math.min(newAmount, MAX_CAPACITY);
+
     let newHistory = [...history];
     const existingIndex = history.findIndex(r => r.date === date);
 
     if (existingIndex >= 0) {
-      newHistory[existingIndex] = { ...newHistory[existingIndex], amount: newAmount };
+      newHistory[existingIndex] = { ...newHistory[existingIndex], amount: cappedAmount };
     } else {
-      newHistory.push({ date: date, amount: newAmount });
+      newHistory.push({ date: date, amount: cappedAmount });
     }
 
     onUpdate({
@@ -56,13 +59,14 @@ const WellnessWidget: React.FC<WellnessWidgetProps> = ({ data, onUpdate }) => {
             ...data.content?.wellness,
             history: newHistory,
             // Sync legacy field if updating today for safety
-            waterIntakeMl: date === todayStr ? newAmount : data.content?.wellness?.waterIntakeMl 
+            waterIntakeMl: date === todayStr ? cappedAmount : data.content?.wellness?.waterIntakeMl 
         } 
       }
     });
   };
 
   const addWater = (amount: number) => {
+    if (currentMl >= MAX_CAPACITY) return;
     updateAmountForDate(activeDate, currentMl + amount);
   };
 
@@ -76,6 +80,11 @@ const WellnessWidget: React.FC<WellnessWidgetProps> = ({ data, onUpdate }) => {
     const amountInThisBlock = Math.max(0, Math.min(BLOCK_CAPACITY, currentMl - blockStartMl));
     return (amountInThisBlock / BLOCK_CAPACITY) * 100;
   };
+
+  // Format display value
+  const displayValue = currentMl >= 1000 
+    ? `${(currentMl / 1000).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}L`
+    : `${currentMl}ml`;
 
   const TabButton = ({ date, label }: { date: string, label: string }) => (
     <button
@@ -107,7 +116,8 @@ const WellnessWidget: React.FC<WellnessWidgetProps> = ({ data, onUpdate }) => {
            </div>
            <div>
              <span className="font-bold text-xl block leading-none text-slate-800 dark:text-slate-100">
-               {currentMl}<span className="text-xs font-normal text-slate-500 ml-0.5">ml</span>
+               {displayValue}
+               {currentMl >= MAX_CAPACITY && <span className="text-[10px] text-red-500 font-normal ml-2">Max</span>}
              </span>
            </div>
         </div>
@@ -163,7 +173,12 @@ const WellnessWidget: React.FC<WellnessWidgetProps> = ({ data, onUpdate }) => {
           <button
             key={amount}
             onClick={() => addWater(amount)}
-            className="flex flex-col items-center justify-center py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all active:scale-95"
+            disabled={currentMl >= MAX_CAPACITY}
+            className={`flex flex-col items-center justify-center py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 transition-all active:scale-95 ${
+                currentMl >= MAX_CAPACITY 
+                ? 'opacity-50 cursor-not-allowed' 
+                : 'hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'
+            }`}
           >
             <Plus size={14} className="mb-0.5" />
             <span className="text-[10px] font-bold">{amount < 1000 ? amount : '1L'}</span>

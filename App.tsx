@@ -4,7 +4,8 @@ import { WidgetData, WidgetType } from './types';
 import { LayoutDashboard, Plus, Sun, Moon } from 'lucide-react';
 
 // Helper for initial dates
-const today = new Date().toISOString().split('T')[0];
+const todayObj = new Date();
+const today = todayObj.toISOString().split('T')[0];
 
 const DEFAULT_WIDGETS: WidgetData[] = [
   {
@@ -12,8 +13,10 @@ const DEFAULT_WIDGETS: WidgetData[] = [
     type: WidgetType.TODO,
     title: 'Daily Tasks',
     content: { todos: [
-      { id: 't1', text: 'Drink water', completed: false, date: today },
-      { id: 't2', text: 'Check emails', completed: true, date: today }
+      { id: 't1', text: 'Drink water', completed: false, archived: false },
+      { id: 't2', text: 'Check emails', completed: true, archived: false },
+      { id: 't3', text: 'Setup project repo', completed: true, archived: true },
+      { id: 't4', text: 'Update documentation', completed: false, archived: false } 
     ] }
   },
   {
@@ -76,7 +79,7 @@ const App: React.FC = () => {
       case WidgetType.WELLNESS: return 'Hydration';
       case WidgetType.AI_ASSISTANT: return 'Life Coach';
       case WidgetType.KANBAN: return 'Kanban Board';
-      case WidgetType.REMINDER: return '';
+      case WidgetType.REMINDER: return 'Reminder';
       default: return 'Widget';
     }
   };
