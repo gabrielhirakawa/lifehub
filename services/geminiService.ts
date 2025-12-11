@@ -21,6 +21,11 @@ const TERMS = {
     upcomingReminders: "Upcoming Reminders",
     noReminders: "No pending reminders",
     column: "Column",
+    gymIntro: "Gym/Workout Stats:",
+    lastWorkout: "Last workout was",
+    activeWorkout: "User is currently doing a workout",
+    availableWorkouts: "Available workout routines",
+    linksIntro: "Pinned Links:",
     systemPrompt: "You are a helpful, encouraging Life Coach. Be concise (max 2 sentences unless asked otherwise). Always respond in English."
   },
   'pt-br': {
@@ -35,6 +40,11 @@ const TERMS = {
     upcomingReminders: "Próximos Lembretes",
     noReminders: "Sem lembretes pendentes",
     column: "Coluna",
+    gymIntro: "Estatísticas de Academia/Treino:",
+    lastWorkout: "Último treino foi",
+    activeWorkout: "Usuário está treinando agora",
+    availableWorkouts: "Rotinas de treino disponíveis",
+    linksIntro: "Links Fixados:",
     systemPrompt: "Você é um Life Coach prestativo e encorajador. Seja conciso (máximo 2 frases, a menos que solicitado o contrário). Responda sempre em Português do Brasil."
   }
 };
@@ -88,6 +98,29 @@ const buildDashboardContext = (widgets: WidgetData[], lang: AILanguage = 'en-us'
         const items = col.items.map(i => i.content).join(", ");
         if (items) dashboardContext += `  ${t.column} '${col.title}': ${items}\n`;
       });
+      
+    } else if (w.type === WidgetType.GYM) {
+      const gymData = w.content?.gym;
+      if (gymData) {
+        dashboardContext += `  ${t.gymIntro}\n`;
+        if (gymData.activeSession) {
+          dashboardContext += `  ${t.activeWorkout}: ${gymData.activeSession.templateName}\n`;
+        }
+        if (gymData.history && gymData.history.length > 0) {
+          // Get last workout
+          const last = gymData.history[gymData.history.length - 1];
+          const date = new Date(last.startTime).toLocaleDateString();
+          dashboardContext += `  ${t.lastWorkout}: ${last.templateName} (${date})\n`;
+        }
+        if (gymData.templates && gymData.templates.length > 0) {
+           dashboardContext += `  ${t.availableWorkouts}: ${gymData.templates.map(t => t.name).join(", ")}\n`;
+        }
+      }
+    } else if (w.type === WidgetType.LINKS) {
+      const links = w.content?.links || [];
+      if (links.length > 0) {
+        dashboardContext += `  ${t.linksIntro} ${links.map(l => `${l.title} (${l.url})`).join(", ")}\n`;
+      }
     }
   });
   return dashboardContext;

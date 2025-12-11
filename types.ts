@@ -4,7 +4,9 @@ export enum WidgetType {
   WELLNESS = 'WELLNESS',
   AI_ASSISTANT = 'AI_ASSISTANT',
   KANBAN = 'KANBAN',
-  REMINDER = 'REMINDER'
+  REMINDER = 'REMINDER',
+  GYM = 'GYM',
+  LINKS = 'LINKS'
 }
 
 export type AIProvider = 'gemini' | 'openai' | 'anthropic';
@@ -29,6 +31,12 @@ export interface ReminderItem {
   text: string;
   date: string; // ISO date string YYYY-MM-DD
   completed: boolean;
+}
+
+export interface LinkItem {
+  id: string;
+  title: string;
+  url: string;
 }
 
 export interface KanbanItem {
@@ -60,6 +68,40 @@ export interface WellnessData {
   history?: WellnessRecord[];
 }
 
+// --- Gym Interfaces ---
+
+export interface GymSet {
+  id: string;
+  reps: number | string;
+  weight: number | string;
+  completed: boolean;
+}
+
+export interface GymExerciseLog {
+  exerciseName: string;
+  sets: GymSet[];
+}
+
+export interface GymSession {
+  id: string;
+  templateName: string;
+  startTime: string; // ISO String
+  endTime?: string; // ISO String
+  logs: GymExerciseLog[]; // Logs stored by exercise name for simplicity in this version
+}
+
+export interface GymTemplate {
+  id: string;
+  name: string;
+  exercises: string[]; // Just list of names
+}
+
+export interface GymData {
+  templates: GymTemplate[];
+  history: GymSession[];
+  activeSession?: GymSession | null;
+}
+
 export interface WidgetData {
   id: string;
   type: WidgetType;
@@ -75,6 +117,8 @@ export interface WidgetData {
     chatHistory?: { role: 'user' | 'model'; text: string }[];
     kanban?: KanbanColumn[];
     reminders?: ReminderItem[];
+    gym?: GymData;
+    links?: LinkItem[];
     // Optional local override for AI config per widget (or global)
     aiConfig?: AIConfig; 
   };

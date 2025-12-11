@@ -80,6 +80,8 @@ const App: React.FC = () => {
       case WidgetType.AI_ASSISTANT: return 'Life Coach';
       case WidgetType.KANBAN: return 'Kanban Board';
       case WidgetType.REMINDER: return 'Reminder';
+      case WidgetType.GYM: return 'Gym Tracker';
+      case WidgetType.LINKS: return 'Quick Links';
       default: return 'Widget';
     }
   };
@@ -96,7 +98,10 @@ const App: React.FC = () => {
       id: Date.now().toString(),
       type: type,
       title: getDefaultTitle(type),
-      content: {}
+      content: {
+        gym: { templates: [], history: [] }, // Init structure for gym
+        links: [] // Init for links
+      }
     };
     setWidgets([...widgets, newWidget]);
     setIsMenuOpen(false); // Close dropdown
@@ -161,6 +166,7 @@ const App: React.FC = () => {
                   <MenuButton type={WidgetType.TODO} colorClass="bg-indigo-400" />
                   <MenuButton type={WidgetType.NOTE} colorClass="bg-yellow-400" />
                   <MenuButton type={WidgetType.AI_ASSISTANT} colorClass="bg-purple-400" />
+                  <MenuButton type={WidgetType.LINKS} colorClass="bg-cyan-400" />
                   
                   <div className="px-4 py-2 mt-1 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-t border-slate-100 dark:border-slate-700">
                     Productivity
@@ -172,6 +178,7 @@ const App: React.FC = () => {
                     Health
                   </div>
                   <MenuButton type={WidgetType.WELLNESS} colorClass="bg-emerald-400" />
+                  <MenuButton type={WidgetType.GYM} colorClass="bg-blue-400" />
                 </div>
               )}
             </div>

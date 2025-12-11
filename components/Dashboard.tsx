@@ -1,12 +1,14 @@
 import React from 'react';
 import { WidgetData, WidgetType } from '../types';
-import { X, CheckSquare, FileText, Activity, Bot, Kanban, Bell, Maximize2, Minimize2 } from 'lucide-react';
+import { X, CheckSquare, FileText, Activity, Bot, Kanban, Bell, Maximize2, Minimize2, Dumbbell, Link as LinkIcon } from 'lucide-react';
 import TodoWidget from './widgets/TodoWidget';
 import NoteWidget from './widgets/NoteWidget';
 import WellnessWidget from './widgets/WellnessWidget';
 import AICoachWidget from './widgets/AICoachWidget';
 import KanbanWidget from './widgets/KanbanWidget';
 import ReminderWidget from './widgets/ReminderWidget';
+import GymTrackWidget from './widgets/GymTrackWidget';
+import LinkWidget from './widgets/LinkWidget';
 
 interface DashboardProps {
   widgets: WidgetData[];
@@ -35,6 +37,8 @@ const Dashboard: React.FC<DashboardProps> = ({ widgets, setWidgets }) => {
       case WidgetType.AI_ASSISTANT: return <Bot size={18} className="text-purple-500 dark:text-purple-400" />;
       case WidgetType.KANBAN: return <Kanban size={18} className="text-orange-500 dark:text-orange-400" />;
       case WidgetType.REMINDER: return <Bell size={18} className="text-rose-500 dark:text-rose-400" />;
+      case WidgetType.GYM: return <Dumbbell size={18} className="text-blue-500 dark:text-blue-400" />;
+      case WidgetType.LINKS: return <LinkIcon size={18} className="text-cyan-500 dark:text-cyan-400" />;
       default: return null;
     }
   };
@@ -111,6 +115,18 @@ const Dashboard: React.FC<DashboardProps> = ({ widgets, setWidgets }) => {
             )}
             {widget.type === WidgetType.REMINDER && (
               <ReminderWidget 
+                data={widget} 
+                onUpdate={(d) => updateWidgetData(widget.id, d)} 
+              />
+            )}
+            {widget.type === WidgetType.GYM && (
+              <GymTrackWidget 
+                data={widget} 
+                onUpdate={(d) => updateWidgetData(widget.id, d)} 
+              />
+            )}
+            {widget.type === WidgetType.LINKS && (
+              <LinkWidget 
                 data={widget} 
                 onUpdate={(d) => updateWidgetData(widget.id, d)} 
               />
