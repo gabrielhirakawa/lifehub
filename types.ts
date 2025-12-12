@@ -6,7 +6,9 @@ export enum WidgetType {
   KANBAN = 'KANBAN',
   REMINDER = 'REMINDER',
   GYM = 'GYM',
-  LINKS = 'LINKS'
+  LINKS = 'LINKS',
+  POMODORO = 'POMODORO',
+  DIET = 'DIET'
 }
 
 export type AIProvider = 'gemini' | 'openai' | 'anthropic';
@@ -102,6 +104,41 @@ export interface GymData {
   activeSession?: GymSession | null;
 }
 
+// --- Pomodoro Interfaces ---
+export type PomodoroMode = 'work' | 'shortBreak' | 'longBreak';
+
+export interface PomodoroData {
+  timeLeft: number; // in seconds (used to store duration when paused)
+  endTime?: number; // timestamp in ms (target completion time)
+  isActive: boolean;
+  mode: PomodoroMode;
+  cyclesCompleted: number;
+}
+
+// --- Diet Interfaces ---
+export interface DietFood {
+  id: string;
+  name: string;
+  calories: number;
+  protein?: number; // Optional protein tracking
+}
+
+export interface DietMeal {
+  id: string;
+  name: string; // e.g. "Breakfast", "Lunch"
+  items: DietFood[];
+}
+
+export interface DietDayLog {
+  date: string; // YYYY-MM-DD
+  meals: DietMeal[];
+}
+
+export interface DietData {
+  calorieGoal: number;
+  history: DietDayLog[];
+}
+
 export interface WidgetData {
   id: string;
   type: WidgetType;
@@ -119,6 +156,8 @@ export interface WidgetData {
     reminders?: ReminderItem[];
     gym?: GymData;
     links?: LinkItem[];
+    pomodoro?: PomodoroData;
+    diet?: DietData;
     // Optional local override for AI config per widget (or global)
     aiConfig?: AIConfig; 
   };

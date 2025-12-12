@@ -26,6 +26,14 @@ const TERMS = {
     activeWorkout: "User is currently doing a workout",
     availableWorkouts: "Available workout routines",
     linksIntro: "Pinned Links:",
+    pomodoroIntro: "Focus/Pomodoro Timer Status:",
+    pomodoroActive: "User is currently running a focus timer",
+    pomodoroMode: "Current mode",
+    pomodoroCycles: "Cycles completed",
+    dietIntro: "Diet & Nutrition Stats:",
+    caloriesConsumed: "Calories consumed today",
+    calorieGoal: "Daily Calorie Goal",
+    proteinConsumed: "Protein consumed",
     systemPrompt: "You are a helpful, encouraging Life Coach. Be concise (max 2 sentences unless asked otherwise). Always respond in English."
   },
   'pt-br': {
@@ -45,6 +53,14 @@ const TERMS = {
     activeWorkout: "Usuário está treinando agora",
     availableWorkouts: "Rotinas de treino disponíveis",
     linksIntro: "Links Fixados:",
+    pomodoroIntro: "Status do Temporizador Pomodoro/Foco:",
+    pomodoroActive: "Usuário está com o temporizador rodando",
+    pomodoroMode: "Modo atual",
+    pomodoroCycles: "Ciclos completados",
+    dietIntro: "Estatísticas de Dieta/Nutrição:",
+    caloriesConsumed: "Calorias consumidas hoje",
+    calorieGoal: "Meta diária de calorias",
+    proteinConsumed: "Proteína consumida",
     systemPrompt: "Você é um Life Coach prestativo e encorajador. Seja conciso (máximo 2 frases, a menos que solicitado o contrário). Responda sempre em Português do Brasil."
   }
 };
@@ -120,6 +136,26 @@ const buildDashboardContext = (widgets: WidgetData[], lang: AILanguage = 'en-us'
       const links = w.content?.links || [];
       if (links.length > 0) {
         dashboardContext += `  ${t.linksIntro} ${links.map(l => `${l.title} (${l.url})`).join(", ")}\n`;
+      }
+    } else if (w.type === WidgetType.POMODORO) {
+      const p = w.content?.pomodoro;
+      if (p) {
+        dashboardContext += `  ${t.pomodoroIntro}\n`;
+        dashboardContext += `  ${t.pomodoroMode}: ${p.mode} (${p.timeLeft}s left)\n`;
+        dashboardContext += `  ${t.pomodoroCycles}: ${p.cyclesCompleted}\n`;
+        if (p.isActive) dashboardContext += `  ${t.pomodoroActive}\n`;
+      }
+    } else if (w.type === WidgetType.DIET) {
+      const d = w.content?.diet;
+      if (d) {
+        const history = d.history || [];
+        const todayLog = history.find(h => h.date === today);
+        const cal = todayLog ? todayLog.meals.reduce((sum, m) => sum + m.items.reduce((s, i) => s + i.calories, 0), 0) : 0;
+        const prot = todayLog ? todayLog.meals.reduce((sum, m) => sum + m.items.reduce((s, i) => s + (i.protein || 0), 0), 0) : 0;
+        
+        dashboardContext += `  ${t.dietIntro}\n`;
+        dashboardContext += `  ${t.caloriesConsumed}: ${cal} / ${d.calorieGoal}\n`;
+        dashboardContext += `  ${t.proteinConsumed}: ${prot}g\n`;
       }
     }
   });

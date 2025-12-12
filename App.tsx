@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Dashboard from './components/Dashboard';
+import LoginScreen from './components/LoginScreen';
 import { WidgetData, WidgetType } from './types';
-import { LayoutDashboard, Plus, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, Plus, Sun, Moon, LogOut, Pencil, Check } from 'lucide-react';
 
 // Helper for initial dates
 const todayObj = new Date();
@@ -12,6 +13,7 @@ const DEFAULT_WIDGETS: WidgetData[] = [
     id: '1',
     type: WidgetType.TODO,
     title: 'Daily Tasks',
+    cols: 2, // Default to Medium size
     content: { todos: [
       { id: 't1', text: 'Drink water', completed: false, archived: false },
       { id: 't2', text: 'Check emails', completed: true, archived: false },
@@ -41,12 +43,17 @@ const DEFAULT_WIDGETS: WidgetData[] = [
 
 const App: React.FC = () => {
   // --- State Management ---
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('lifehub_auth') === 'true';
+  });
+
   const [widgets, setWidgets] = useState<WidgetData[]>(() => {
     const saved = localStorage.getItem('lifehub_widgets');
     return saved ? JSON.parse(saved) : DEFAULT_WIDGETS;
   });
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false); // New Edit Mode State
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('lifehub_theme') === 'dark' || 
@@ -82,6 +89,8 @@ const App: React.FC = () => {
       case WidgetType.REMINDER: return 'Reminder';
       case WidgetType.GYM: return 'Gym Tracker';
       case WidgetType.LINKS: return 'Quick Links';
+      case WidgetType.POMODORO: return 'Pomodoro';
+      case WidgetType.DIET: return 'Diet Tracker';
       default: return 'Widget';
     }
   };
@@ -91,6 +100,16 @@ const App: React.FC = () => {
   };
 
   // --- Handlers ---
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+    localStorage.setItem('lifehub_auth', 'true');
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('lifehub_auth');
+  };
+
   const handleAddWidget = (type: WidgetType) => {
     if (isWidgetAdded(type)) return;
 
@@ -98,9 +117,12 @@ const App: React.FC = () => {
       id: Date.now().toString(),
       type: type,
       title: getDefaultTitle(type),
+      cols: type === WidgetType.TODO ? 2 : 1, // Todo defaults to Medium (2), others Small (1)
       content: {
         gym: { templates: [], history: [] }, // Init structure for gym
-        links: [] // Init for links
+        links: [], // Init for links
+        pomodoro: { timeLeft: 25 * 60, isActive: false, mode: 'work', cyclesCompleted: 0 }, // Init for pomodoro
+        diet: { calorieGoal: 2000, history: [] } // Init for diet
       }
     };
     setWidgets([...widgets, newWidget]);
@@ -126,6 +148,24 @@ const App: React.FC = () => {
     );
   };
 
+  // If not authenticated, show login screen
+  if (!isAuthenticated) {
+    return (
+      <>
+        {/* Toggle Theme Button for Login Screen */}
+        <div className="fixed top-4 right-4 z-50">
+           <button 
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className="p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors shadow-sm"
+            >
+              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+        </div>
+        <LoginScreen onLogin={handleLogin} />
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col transition-colors duration-300">
       {/* Header */}
@@ -139,6 +179,20 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Edit Layout Button */}
+             <button 
+              onClick={() => setIsEditMode(!isEditMode)}
+              className={`p-2 rounded-lg transition-all flex items-center gap-2 text-sm font-medium ${
+                isEditMode 
+                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 ring-2 ring-amber-500/20' 
+                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+              title={isEditMode ? "Finish Editing" : "Edit Layout"}
+            >
+              {isEditMode ? <Check size={18} /> : <Pencil size={18} />}
+              <span className="hidden sm:inline">{isEditMode ? 'Done' : 'Edit'}</span>
+            </button>
+
             {/* Dark Mode Toggle */}
             <button 
               onClick={() => setIsDarkMode(!isDarkMode)}
@@ -148,18 +202,31 @@ const App: React.FC = () => {
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
 
-            <div className="relative">
+            <div className="relative flex items-center gap-2">
               <button 
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm shadow-indigo-200 dark:shadow-none"
+                disabled={isEditMode} // Disable adding while editing layout
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm ${
+                  isEditMode 
+                  ? 'bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed shadow-none'
+                  : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200 dark:shadow-none'
+                }`}
               >
                 <Plus size={16} />
                 <span className="hidden sm:inline">Add Widget</span>
               </button>
 
+               <button 
+                onClick={handleLogout}
+                className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-800"
+                title="Logout"
+              >
+                <LogOut size={20} />
+              </button>
+
               {/* Dropdown Menu */}
               {isMenuOpen && (
-                <div className="absolute right-0 mt-2 w-60 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 py-2 z-40 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+                <div className="absolute top-full right-0 mt-2 w-60 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 py-2 z-40 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
                   <div className="px-4 py-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                     General
                   </div>
@@ -173,12 +240,14 @@ const App: React.FC = () => {
                   </div>
                   <MenuButton type={WidgetType.KANBAN} colorClass="bg-orange-400" />
                   <MenuButton type={WidgetType.REMINDER} colorClass="bg-rose-400" />
+                  <MenuButton type={WidgetType.POMODORO} colorClass="bg-red-400" />
                   
                   <div className="px-4 py-2 mt-1 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-t border-slate-100 dark:border-slate-700">
                     Health
                   </div>
                   <MenuButton type={WidgetType.WELLNESS} colorClass="bg-emerald-400" />
                   <MenuButton type={WidgetType.GYM} colorClass="bg-blue-400" />
+                  <MenuButton type={WidgetType.DIET} colorClass="bg-lime-400" />
                 </div>
               )}
             </div>
@@ -188,12 +257,19 @@ const App: React.FC = () => {
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Hello, User</h2>
-          <p className="text-slate-500 dark:text-slate-400">Here's what's happening in your life today.</p>
+        <div className="mb-8 flex justify-between items-end">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Hello, User</h2>
+            <p className="text-slate-500 dark:text-slate-400">Here's what's happening in your life today.</p>
+          </div>
+          {isEditMode && (
+            <div className="text-amber-600 dark:text-amber-500 text-sm font-medium animate-pulse">
+              Edit Mode Active
+            </div>
+          )}
         </div>
         
-        <Dashboard widgets={widgets} setWidgets={setWidgets} />
+        <Dashboard widgets={widgets} setWidgets={setWidgets} isEditMode={isEditMode} />
       </main>
 
       {/* Overlay for menu close */}

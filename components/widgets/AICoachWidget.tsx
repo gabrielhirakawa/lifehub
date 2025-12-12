@@ -49,23 +49,29 @@ const AICoachWidget: React.FC<AICoachWidgetProps> = ({ allWidgets, data, onUpdat
     scrollToBottom();
   }, [messages, showSettings]);
 
-  const handleSend = async (e?: React.FormEvent) => {
+  const handleSend = async (e?: React.FormEvent, overrideText?: string) => {
     e?.preventDefault();
-    if (!input.trim() && !e) return; 
-
-    const userMsg = input;
-    const defaultQuery = config.language === 'pt-br' ? "Analise meu painel." : "Analyze my dashboard.";
     
-    const newHistory = [...messages, { role: 'user', text: userMsg || defaultQuery }];
+    // Determine the text to use. If overrideText is present, use it. Otherwise use input.
+    const textToSend = overrideText || input;
+
+    if (!textToSend.trim()) return; 
+
+    const newHistory = [...messages, { role: 'user', text: textToSend }];
     
     onUpdate({
         ...data,
         content: { ...data.content, chatHistory: newHistory as any }
     });
-    setInput('');
+    
+    // Only clear input if we used the input field
+    if (!overrideText) {
+        setInput('');
+    }
+    
     setLoading(true);
 
-    const responseText = await getGeminiInsight(allWidgets, userMsg, config);
+    const responseText = await getGeminiInsight(allWidgets, textToSend, config);
     const finalHistory = [...newHistory, { role: 'model', text: responseText }];
     
     onUpdate({
@@ -241,7 +247,7 @@ const AICoachWidget: React.FC<AICoachWidgetProps> = ({ allWidgets, data, onUpdat
             <div ref={messagesEndRef} />
           </div>
 
-          <form onSubmit={handleSend} className="relative flex-shrink-0">
+          <form onSubmit={(e) => handleSend(e)} className="relative flex-shrink-0">
             <input
               type="text"
               value={input}
@@ -261,7 +267,7 @@ const AICoachWidget: React.FC<AICoachWidgetProps> = ({ allWidgets, data, onUpdat
           
           {messages.length < 2 && (
               <button 
-                onClick={() => handleSend()}
+                onClick={() => handleSend(undefined, config.language === 'pt-br' ? 'Analise meu dia' : 'Analyze my day')}
                 className="mt-2 text-xs flex items-center justify-center gap-1 text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 transition-colors w-full py-1 bg-purple-50 dark:bg-purple-900/20 rounded-md flex-shrink-0"
               >
                 <Sparkles size={12} /> {config.language === 'pt-br' ? 'Analise meu dia' : 'Analyze my day'}
