@@ -27,7 +27,18 @@
       - Entradas e Saídas manuais.
       - Categorização simples (Alimentação, Transporte, Lazer, etc.).
       - Visualização de saldo mensal.
+    - [ ] **Widget Wiki (Markdown Avançado):**
+      - Editor Markdown com suporte a múltiplas abas.
+      - **Compartilhamento Público:** Botão para gerar link público (Read-Only) via UUID.
+      - **Identificação Visual:** Ícone (ex: globo) para abas públicas.
+      - **Frontend Dedicado:** Rota específica (ex: `/wiki/:uuid`) para renderização limpa da página compartilhada.
+      - **Backend:** Rotas públicas para servir o conteúdo sem autenticação via hash.
+      - [ ] **Melhoria Markdown:** Adicionar suporte completo a Markdown (negrito, links, imagens, tabelas) usando `react-markdown` e `@tailwindcss/typography`.
     - [ ] Widget de Clima/Tempo.
+6.  **Melhorias de Funcionalidades:**
+    - [ ] **Notificações Push para Lembretes:** Integrar o widget de Reminder com o sistema de Web Push do backend.
+    - [ ] **Segurança de IA:** Migrar a lógica do `geminiService` (Frontend) para o Backend (Go) para proteger as chaves de API e centralizar as requisições.
+    - [ ] Aba de changelog
 
 ## Histórico Recente
 

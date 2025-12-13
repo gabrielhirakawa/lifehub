@@ -9,6 +9,7 @@ export enum WidgetType {
   LINKS = "LINKS",
   POMODORO = "POMODORO",
   DIET = "DIET",
+  WIKI = "WIKI",
 }
 
 export type AIProvider = "gemini" | "openai" | "anthropic";
@@ -139,6 +140,20 @@ export interface DietData {
   history: DietDayLog[];
 }
 
+// --- Wiki Interfaces ---
+export interface WikiPage {
+  id: string;
+  title: string;
+  content: string; // Markdown content
+  isPublic?: boolean; // For future sharing feature
+  publicId?: string; // UUID for public access
+}
+
+export interface WikiData {
+  pages: WikiPage[];
+  activePageId?: string;
+}
+
 export interface WidgetData {
   id: string;
   type: WidgetType;
@@ -159,6 +174,7 @@ export interface WidgetData {
     links?: LinkItem[];
     pomodoro?: PomodoroData;
     diet?: DietData;
+    wiki?: WikiData;
     // Optional local override for AI config per widget (or global)
     aiConfig?: AIConfig;
   };

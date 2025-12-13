@@ -14,6 +14,7 @@ import {
   GripVertical,
   Check,
   Utensils,
+  Globe,
 } from "lucide-react";
 import TodoWidget from "./widgets/TodoWidget";
 import NoteWidget from "./widgets/NoteWidget";
@@ -25,6 +26,7 @@ import GymTrackWidget from "./widgets/GymTrackWidget";
 import LinkWidget from "./widgets/LinkWidget";
 import PomodoroWidget from "./widgets/PomodoroWidget";
 import DietWidget from "./widgets/DietWidget";
+import WikiWidget from "./widgets/WikiWidget";
 
 interface DashboardProps {
   widgets: WidgetData[];
@@ -152,6 +154,10 @@ const Dashboard: React.FC<DashboardProps> = ({
       case WidgetType.DIET:
         return (
           <Utensils size={18} className="text-lime-600 dark:text-lime-400" />
+        );
+      case WidgetType.WIKI:
+        return (
+          <Globe size={18} className="text-indigo-500 dark:text-indigo-400" />
         );
       case WidgetType.POMODORO:
         return (
@@ -393,6 +399,12 @@ const Dashboard: React.FC<DashboardProps> = ({
               )}
               {widget.type === WidgetType.DIET && (
                 <DietWidget
+                  data={widget}
+                  onUpdate={(d) => updateWidgetData(widget.id, d)}
+                />
+              )}
+              {widget.type === WidgetType.WIKI && (
+                <WikiWidget
                   data={widget}
                   onUpdate={(d) => updateWidgetData(widget.id, d)}
                 />
