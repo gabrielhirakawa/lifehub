@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/gabrielhirakawa/lifehub/internal/config"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -19,7 +20,7 @@ var jwtSecret []byte
 // InitJWT initializes the JWT secret key.
 // It tries to load from data/jwt_secret, or generates a new one if not found.
 func InitJWT() {
-	secretFile := filepath.Join("data", "jwt_secret")
+	secretFile := filepath.Join(config.GetDataDir(), "jwt_secret")
 
 	// 1. Try to load existing secret
 	if data, err := os.ReadFile(secretFile); err == nil {

@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/SherClockHolmes/webpush-go"
+	"github.com/gabrielhirakawa/lifehub/internal/config"
 	"github.com/gabrielhirakawa/lifehub/internal/database"
 )
 
@@ -22,7 +23,7 @@ type VapidKeys struct {
 }
 
 func InitVAPID() {
-	keysFile := filepath.Join("data", "vapid_keys.json")
+	keysFile := filepath.Join(config.GetDataDir(), "vapid_keys.json")
 
 	// 1. Try to load existing keys
 	if file, err := os.ReadFile(keysFile); err == nil {

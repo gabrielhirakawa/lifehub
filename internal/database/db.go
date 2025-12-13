@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/gabrielhirakawa/lifehub/internal/config"
 	_ "modernc.org/sqlite" // Import the SQLite driver
 )
 
@@ -15,7 +16,7 @@ var DB *sql.DB
 // InitDB initializes the SQLite database connection and creates tables.
 func InitDB() error {
 	// Ensure the data directory exists
-	dataDir := "./data"
+	dataDir := config.GetDataDir()
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
 		return fmt.Errorf("failed to create data directory: %w", err)
 	}
