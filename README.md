@@ -1,44 +1,110 @@
 # LifeHub Dashboard
 
-A centralized personal dashboard designed to streamline your daily life by tracking tasks, habits, notes, and wellness, powered by AI insights.
+A centralized personal dashboard designed to streamline your daily life by tracking tasks, habits, notes, and wellness, powered by AI insights. Now with a robust backend for data persistence.
 
-<div align="center">
-<img alt="GHBanner" src="./screenshot.png" />
-</div>
-
-![Banner](./img/screenshot.png)
+![Banner](./web/img/lifehub_screen.png)
 
 ## Features
 
 ### 📅 Daily Tasks
+
 - **Date-based Tracking**: Manage tasks for Today, Yesterday, and the Day Before.
 - **Smart Rollover**: Unfinished tasks from previous days automatically roll over to "Today" with an overdue indicator.
 
 ### 💧 Hydration Tracker
+
 - **History Log**: Track water intake across multiple days.
 - **Visual Progress**: Dynamic water level visualization.
 
 ### 🤖 AI Coach (Gemini)
+
 - **Context Aware**: The AI analyzes your current tasks, hydration, and notes to provide personalized advice.
 - **Chat Interface**: Interact directly with your data.
 
 ### ⚡ Productivity Tools
+
 - **Kanban Board**: Drag-and-drop style task management (To Do, Doing, Done).
 - **Notes**: Tabbed interface for multiple notes.
 - **Reminders**: Track upcoming events and deadlines.
+- **Pomodoro Timer**: Focus timer with work/break intervals.
+- **Gym Tracker**: Log workouts and track history.
+
+### 💾 Data Persistence
+
+- **Self-Hosted Backend**: Data is stored locally in a SQLite database.
+- **Widget Restoration**: Removing a widget "soft deletes" it; adding it back restores your previous data.
 
 ## Technologies
 
-- **Frontend**: React 19, TypeScript, Vite
+### Frontend (`/web`)
+
+- **Framework**: React 19, TypeScript, Vite
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
 - **AI**: Google GenAI SDK (`@google/genai`)
 
+### Backend (`/cmd`, `/internal`)
+
+- **Language**: Go (Golang) 1.24+
+- **Database**: SQLite (via `modernc.org/sqlite` - pure Go driver)
+- **Architecture**: REST API
+
+## Project Structure
+
+```
+lifehub/
+├── cmd/server/         # Backend entry point
+├── internal/           # Backend logic
+│   ├── api/            # HTTP Handlers
+│   ├── database/       # Database operations
+│   └── models/         # Data structures
+├── web/                # Frontend application (React)
+└── go.mod              # Go dependencies
+```
+
 ## Setup
 
-1. Clone the repository.
-2. Create a `.env` file with your Google Gemini API Key:
-   ```env
-   API_KEY=your_api_key_here
-   ```
-3. Install dependencies and run.
+### Prerequisites
+
+- Go 1.24 or higher
+- Node.js 20 or higher
+
+### 1. Backend Setup
+
+Start the Go server to handle data persistence.
+
+```bash
+# Install Go dependencies
+go mod download
+
+# Run the server
+go run cmd/server/main.go
+```
+
+The server will start on `http://localhost:8080`.
+
+### 2. Frontend Setup
+
+In a new terminal, start the React application.
+
+```bash
+cd web
+
+# Install dependencies
+npm install
+
+# Create .env file for AI features
+echo "VITE_GEMINI_API_KEY=your_api_key_here" > .env
+
+# Run the development server
+npm run dev
+```
+
+The application will be available at `http://localhost:5173`.
+
+## API Endpoints
+
+- `GET /api/widgets`: List all active widgets.
+- `GET /api/widgets/{id}`: Get a specific widget (even if inactive).
+- `POST /api/widgets/save`: Create or update a widget.
+- `DELETE /api/widgets/delete/{id}`: Soft delete a widget.

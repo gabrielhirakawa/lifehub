@@ -1,18 +1,18 @@
 export enum WidgetType {
-  TODO = 'TODO',
-  NOTE = 'NOTE',
-  WELLNESS = 'WELLNESS',
-  AI_ASSISTANT = 'AI_ASSISTANT',
-  KANBAN = 'KANBAN',
-  REMINDER = 'REMINDER',
-  GYM = 'GYM',
-  LINKS = 'LINKS',
-  POMODORO = 'POMODORO',
-  DIET = 'DIET'
+  TODO = "TODO",
+  NOTE = "NOTE",
+  WELLNESS = "WELLNESS",
+  AI_ASSISTANT = "AI_ASSISTANT",
+  KANBAN = "KANBAN",
+  REMINDER = "REMINDER",
+  GYM = "GYM",
+  LINKS = "LINKS",
+  POMODORO = "POMODORO",
+  DIET = "DIET",
 }
 
-export type AIProvider = 'gemini' | 'openai' | 'anthropic';
-export type AILanguage = 'pt-br' | 'en-us';
+export type AIProvider = "gemini" | "openai" | "anthropic";
+export type AILanguage = "pt-br" | "en-us";
 
 export interface AIConfig {
   provider: AIProvider;
@@ -64,9 +64,9 @@ export interface WellnessRecord {
 }
 
 export interface WellnessData {
-  // We keep this optional for backward compatibility during migration, 
+  // We keep this optional for backward compatibility during migration,
   // but we primarily use 'history' now.
-  waterIntakeMl?: number; 
+  waterIntakeMl?: number;
   history?: WellnessRecord[];
 }
 
@@ -105,7 +105,7 @@ export interface GymData {
 }
 
 // --- Pomodoro Interfaces ---
-export type PomodoroMode = 'work' | 'shortBreak' | 'longBreak';
+export type PomodoroMode = "work" | "shortBreak" | "longBreak";
 
 export interface PomodoroData {
   timeLeft: number; // in seconds (used to store duration when paused)
@@ -144,14 +144,15 @@ export interface WidgetData {
   type: WidgetType;
   title: string;
   cols?: number; // Number of grid columns to span (default 1)
+  isActive?: boolean;
   // Dynamic content based on type
   content?: {
     todos?: TodoItem[];
     // Deprecated single text string, kept for migration
-    text?: string; 
+    text?: string;
     notes?: NoteTab[];
     wellness?: WellnessData;
-    chatHistory?: { role: 'user' | 'model'; text: string }[];
+    chatHistory?: { role: "user" | "model"; text: string }[];
     kanban?: KanbanColumn[];
     reminders?: ReminderItem[];
     gym?: GymData;
@@ -159,7 +160,7 @@ export interface WidgetData {
     pomodoro?: PomodoroData;
     diet?: DietData;
     // Optional local override for AI config per widget (or global)
-    aiConfig?: AIConfig; 
+    aiConfig?: AIConfig;
   };
 }
 
