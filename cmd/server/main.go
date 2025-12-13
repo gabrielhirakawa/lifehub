@@ -26,14 +26,14 @@ func main() {
 
 	// API Routes
 	http.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w)
+		enableCors(&w, r)
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("LifeHub Backend is running!"))
 	})
 
 	// --- Auth Routes ---
 	http.HandleFunc("/api/auth/status", func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w)
+		enableCors(&w, r)
 		if r.Method == http.MethodOptions {
 			return
 		}
@@ -41,7 +41,7 @@ func main() {
 	})
 
 	http.HandleFunc("/api/auth/register", func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w)
+		enableCors(&w, r)
 		if r.Method == http.MethodOptions {
 			return
 		}
@@ -49,7 +49,7 @@ func main() {
 	})
 
 	http.HandleFunc("/api/auth/login", func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w)
+		enableCors(&w, r)
 		if r.Method == http.MethodOptions {
 			return
 		}
@@ -58,13 +58,13 @@ func main() {
 
 	// --- Widget Routes ---
 	http.HandleFunc("/api/widgets", api.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w)
+		enableCors(&w, r)
 		api.HandleGetWidgets(w, r)
 	}))
 
 	// Handle /api/widgets/{id} for fetching single widget
 	http.HandleFunc("/api/widgets/", api.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w)
+		enableCors(&w, r)
 		// Check if it's a delete request or get by ID
 		if r.Method == http.MethodDelete {
 			// This path might conflict if not careful, but let's see.
@@ -85,29 +85,29 @@ func main() {
 	}))
 
 	http.HandleFunc("/api/widgets/save", api.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w)
+		enableCors(&w, r)
 		api.HandleSaveWidget(w, r)
 	}))
 
 	// Handle /api/widgets/delete/{id}
 	http.HandleFunc("/api/widgets/delete/", api.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w)
+		enableCors(&w, r)
 		api.HandleDeleteWidget(w, r)
 	}))
 
 	// --- Push Notification Routes ---
 	http.HandleFunc("/api/push/vapid-key", func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w)
+		enableCors(&w, r)
 		api.HandleGetVAPIDKey(w, r)
 	})
 
 	http.HandleFunc("/api/push/subscribe", api.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w)
+		enableCors(&w, r)
 		api.HandleSubscribe(w, r)
 	}))
 
 	http.HandleFunc("/api/push/send-test", api.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w)
+		enableCors(&w, r)
 		api.HandleSendNotification(w, r)
 	}))
 
@@ -116,13 +116,23 @@ func main() {
 	}
 }
 
-func enableCors(w *http.ResponseWriter) {
-	// For credentials (cookies) to work, Origin cannot be '*'
-	// It must be the specific origin of the frontend.
-	// Allowing localhost:3000 as requested.
-	(*w).Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+func enableCors(w *http.ResponseWriter, r *http.Request) {
+	// Allow specific origins for development
+	allowedOrigins := map[string]bool{
+		"http://localhost:3000": true,
+		"http://127.0.0.1:3000": true,
+	}
+
+	origin := r.Header.Get("Origin")
+	if allowedOrigins[origin] {
+		(*w).Header().Set("Access-Control-Allow-Origin", origin)
+	} else {
+		// Default to localhost:3000 if origin is missing or not in list (fallback)
+		(*w).Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	}
+
 	(*w).Header().Set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
-	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 	(*w).Header().Set("Access-Control-Allow-Credentials", "true")
 }
 

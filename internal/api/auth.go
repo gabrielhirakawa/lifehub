@@ -117,6 +117,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
 		Path:     "/",
+		SameSite: http.SameSiteLaxMode,
+		Secure:   false, // Set to true in production with HTTPS
 	})
 
 	w.Header().Set("Content-Type", "application/json")

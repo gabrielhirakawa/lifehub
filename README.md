@@ -111,7 +111,7 @@ echo "VITE_GEMINI_API_KEY=your_api_key_here" > .env
 npm run dev
 ```
 
-The application will be available at `http://localhost:5173`.
+The application will be available at `http://localhost:3000`.
 
 ## API Endpoints
 
