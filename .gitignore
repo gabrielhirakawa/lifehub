@@ -32,3 +32,6 @@ dist-ssr
 
 # Go binaries
 /bin/
+server
+data/vapid_keys.json
+data/jwt_secret

@@ -11,12 +11,28 @@ import {
   LogOut,
   Pencil,
   Check,
+  Bell,
+  BellOff,
+  Send,
 } from "lucide-react";
 import { api } from "./services/api";
 
 // Helper for initial dates
 const todayObj = new Date();
 const today = todayObj.toISOString().split("T")[0];
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
 
 const App: React.FC = () => {
   // --- State Management ---
@@ -43,6 +59,9 @@ const App: React.FC = () => {
     return false;
   });
 
+  const [notificationPermission, setNotificationPermission] =
+    useState<NotificationPermission>("default");
+
   // --- Effects ---
   useEffect(() => {
     // Check auth status
@@ -58,6 +77,11 @@ const App: React.FC = () => {
       setWidgets(data);
     };
     loadWidgets();
+
+    // Check notification permission
+    if ("Notification" in window) {
+      setNotificationPermission(Notification.permission);
+    }
   }, []);
 
   useEffect(() => {
@@ -70,6 +94,86 @@ const App: React.FC = () => {
       localStorage.setItem("lifehub_theme", "light");
     }
   }, [isDarkMode]);
+
+  // --- Push Notifications ---
+  const handleEnableNotifications = async () => {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      alert("Push notifications are not supported in this browser.");
+      return;
+    }
+
+    try {
+      // 1. Register Service Worker
+      const registration = await navigator.serviceWorker.register("/sw.js");
+      console.log("Service Worker registered:", registration);
+
+      // 2. Request Permission
+      const permission = await Notification.requestPermission();
+      setNotificationPermission(permission);
+      if (permission !== "granted") {
+        alert("Permission denied for notifications.");
+        return;
+      }
+
+      // 3. Get VAPID Key
+      const vapidKey = await api.getVapidKey();
+      console.log("VAPID Key received:", vapidKey);
+      if (!vapidKey) {
+        alert("Failed to get VAPID key from server.");
+        return;
+      }
+
+      // 4. Subscribe
+      let convertedVapidKey;
+      try {
+        convertedVapidKey = urlBase64ToUint8Array(vapidKey);
+      } catch (e) {
+        console.error("Error converting VAPID key:", e);
+        alert("Error converting VAPID key.");
+        return;
+      }
+
+      console.log("Subscribing to push manager...");
+      let subscription;
+      try {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidKey,
+        });
+      } catch (subError) {
+        console.warn(
+          "Initial subscription failed. Attempting to unsubscribe and resubscribe...",
+          subError
+        );
+        // If subscription failed, it might be due to a key mismatch.
+        // Try to unsubscribe existing subscription and subscribe again.
+        const existingSub = await registration.pushManager.getSubscription();
+        if (existingSub) {
+          await existingSub.unsubscribe();
+          subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: convertedVapidKey,
+          });
+        } else {
+          throw subError;
+        }
+      }
+
+      console.log("Subscription object:", subscription);
+
+      // 5. Send to Backend
+      console.log("Sending subscription to backend...");
+      await api.subscribeToPush(subscription);
+      alert("Notifications enabled successfully!");
+    } catch (error) {
+      console.error("Error enabling notifications:", error);
+      alert(
+        `An error occurred: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  };
 
   // --- Helpers ---
   const getDefaultTitle = (type: WidgetType) => {
@@ -321,6 +425,38 @@ const App: React.FC = () => {
               <span className="hidden sm:inline">
                 {isEditMode ? "Done" : "Edit"}
               </span>
+            </button>
+
+            {/* Notifications Button */}
+            <button
+              onClick={handleEnableNotifications}
+              className={`p-2 rounded-lg transition-colors ${
+                notificationPermission === "granted"
+                  ? "text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 dark:text-indigo-400"
+                  : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+              }`}
+              title={
+                notificationPermission === "granted"
+                  ? "Notifications Enabled"
+                  : "Enable Notifications"
+              }
+            >
+              {notificationPermission === "granted" ? (
+                <Bell size={20} className="fill-current" />
+              ) : notificationPermission === "denied" ? (
+                <BellOff size={20} />
+              ) : (
+                <Bell size={20} />
+              )}
+            </button>
+
+            {/* Test Notification Button (Dev Only) */}
+            <button
+              onClick={() => api.sendTestNotification()}
+              className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              title="Send Test Notification"
+            >
+              <Send size={20} />
             </button>
 
             {/* Dark Mode Toggle */}

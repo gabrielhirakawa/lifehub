@@ -41,6 +41,10 @@ func InitDB() error {
 		return fmt.Errorf("failed to create users table: %w", err)
 	}
 
+	if err := InitPushTable(); err != nil {
+		return fmt.Errorf("failed to create push table: %w", err)
+	}
+
 	return nil
 }
 
@@ -48,6 +52,7 @@ func createTables() error {
 	query := `
 	CREATE TABLE IF NOT EXISTS widgets (
 		id TEXT PRIMARY KEY,
+		user_id INTEGER,
 		type TEXT NOT NULL,
 		title TEXT NOT NULL,
 		cols INTEGER DEFAULT 1,
@@ -63,6 +68,10 @@ func createTables() error {
 	if err != nil {
 		return fmt.Errorf("failed to create widgets table: %w", err)
 	}
+	
+	// Migration: Add user_id column if it doesn't exist (for existing DBs)
+	// SQLite doesn't support IF NOT EXISTS in ADD COLUMN, so we ignore error
+	DB.Exec(`ALTER TABLE widgets ADD COLUMN user_id INTEGER`)
 
 	return nil
 }

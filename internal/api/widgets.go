@@ -9,14 +9,20 @@ import (
 	"github.com/gabrielhirakawa/lifehub/internal/models"
 )
 
-// HandleGetWidgets returns all widgets.
+// HandleGetWidgets returns all widgets for the authenticated user.
 func HandleGetWidgets(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	widgets, err := database.GetAllWidgets()
+	userID, err := GetUserIDFromContext(r)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	widgets, err := database.GetAllWidgets(userID)
 	if err != nil {
 		http.Error(w, "Failed to fetch widgets", http.StatusInternalServerError)
 		return
@@ -31,10 +37,16 @@ func HandleGetWidgets(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(widgets)
 }
 
-// HandleSaveWidget creates or updates a widget.
+// HandleSaveWidget creates or updates a widget for the authenticated user.
 func HandleSaveWidget(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID, err := GetUserIDFromContext(r)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
@@ -44,7 +56,7 @@ func HandleSaveWidget(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := database.SaveWidget(widget); err != nil {
+	if err := database.SaveWidget(userID, widget); err != nil {
 		http.Error(w, "Failed to save widget", http.StatusInternalServerError)
 		return
 	}
@@ -53,19 +65,19 @@ func HandleSaveWidget(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"status":"success"}`))
 }
 
-// HandleDeleteWidget removes a widget.
-// Expects path like /api/widgets/delete?id=... or we can parse path if we use a router.
-// For simplicity with stdlib, let's use query param: DELETE /api/widgets?id=...
+// HandleDeleteWidget removes a widget for the authenticated user.
 func HandleDeleteWidget(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Extract ID from URL path if using /api/widgets/{id} pattern manually
-	// Or query param. Let's try to support /api/widgets/{id} by parsing path
-	// Assuming route is registered as /api/widgets/delete/
-	
+	userID, err := GetUserIDFromContext(r)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	parts := strings.Split(r.URL.Path, "/")
 	// Expected: ["", "api", "widgets", "delete", "{id}"]
 	if len(parts) < 5 || parts[4] == "" {
@@ -74,7 +86,7 @@ func HandleDeleteWidget(w http.ResponseWriter, r *http.Request) {
 	}
 	id := parts[4]
 
-	if err := database.DeleteWidget(id); err != nil {
+	if err := database.DeleteWidget(userID, id); err != nil {
 		http.Error(w, "Failed to delete widget", http.StatusInternalServerError)
 		return
 	}
@@ -83,10 +95,16 @@ func HandleDeleteWidget(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{"status":"deleted"}`))
 }
 
-// HandleGetWidgetByID returns a single widget.
+// HandleGetWidgetByID returns a single widget for the authenticated user.
 func HandleGetWidgetByID(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID, err := GetUserIDFromContext(r)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
@@ -98,7 +116,7 @@ func HandleGetWidgetByID(w http.ResponseWriter, r *http.Request) {
 	}
 	id := parts[3]
 
-	widget, err := database.GetWidgetByID(id)
+	widget, err := database.GetWidgetByID(userID, id)
 	if err != nil {
 		http.Error(w, "Failed to fetch widget", http.StatusInternalServerError)
 		return

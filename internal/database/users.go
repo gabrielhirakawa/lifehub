@@ -45,21 +45,23 @@ func CreateUser(username, password string) error {
 }
 
 // ValidateUser checks if the username and password match.
-func ValidateUser(username, password string) (bool, error) {
+// Returns user ID if valid.
+func ValidateUser(username, password string) (int, error) {
 	var storedHash string
-	query := `SELECT password FROM users WHERE username = ?`
-	err := DB.QueryRow(query, username).Scan(&storedHash)
+	var id int
+	query := `SELECT id, password FROM users WHERE username = ?`
+	err := DB.QueryRow(query, username).Scan(&id, &storedHash)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return false, nil // User not found
+			return 0, fmt.Errorf("invalid credentials")
 		}
-		return false, err
+		return 0, err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(password))
 	if err != nil {
-		return false, nil // Password mismatch
+		return 0, fmt.Errorf("invalid credentials")
 	}
 
-	return true, nil
+	return id, nil
 }

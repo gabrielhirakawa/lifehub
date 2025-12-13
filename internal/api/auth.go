@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/gabrielhirakawa/lifehub/internal/database"
 )
@@ -94,17 +95,29 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	valid, err := database.ValidateUser(req.Username, req.Password)
+	userID, err := database.ValidateUser(req.Username, req.Password)
 	if err != nil {
-		http.Error(w, "Database error", http.StatusInternalServerError)
-		return
-	}
-
-	if !valid {
+		// ValidateUser returns error on invalid credentials now
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(AuthResponse{Success: false, Message: "Invalid credentials"})
 		return
 	}
+
+	// Generate JWT
+	token, err := GenerateToken(userID, req.Username)
+	if err != nil {
+		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+		return
+	}
+
+	// Set Cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "token",
+		Value:    token,
+		Expires:  time.Now().Add(24 * time.Hour),
+		HttpOnly: true,
+		Path:     "/",
+	})
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(AuthResponse{

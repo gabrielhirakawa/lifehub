@@ -29,9 +29,16 @@ A centralized personal dashboard designed to streamline your daily life by track
 - **Pomodoro Timer**: Focus timer with work/break intervals.
 - **Gym Tracker**: Log workouts and track history.
 
-### 💾 Data Persistence
+### � Push Notifications
+
+- **Web Push API**: Receive notifications even when the app is closed.
+- **VAPID Security**: Secure communication between your server and the browser.
+- **Multi-User**: Notifications are delivered only to the authenticated user.
+
+### �💾 Data Persistence
 
 - **Self-Hosted Backend**: Data is stored locally in a SQLite database.
+- **Multi-User Support**: Secure login with JWT and data isolation per user.
 - **Widget Restoration**: Removing a widget "soft deletes" it; adding it back restores your previous data.
 
 ## Technologies
@@ -42,11 +49,14 @@ A centralized personal dashboard designed to streamline your daily life by track
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
 - **AI**: Google GenAI SDK (`@google/genai`)
+- **PWA**: Service Worker for offline support and notifications
 
 ### Backend (`/cmd`, `/internal`)
 
 - **Language**: Go (Golang) 1.24+
 - **Database**: SQLite (via `modernc.org/sqlite` - pure Go driver)
+- **Auth**: JWT (JSON Web Tokens) with HttpOnly Cookies
+- **Push**: Web Push Library (`webpush-go`)
 - **Architecture**: REST API
 
 ## Project Structure
@@ -82,6 +92,7 @@ go run cmd/server/main.go
 ```
 
 The server will start on `http://localhost:8080`.
+_Note: On first run, it will generate `data/vapid_keys.json` for push notifications._
 
 ### 2. Frontend Setup
 
