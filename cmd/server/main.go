@@ -56,6 +56,14 @@ func main() {
 		api.HandleLogin(w, r)
 	})
 
+	http.HandleFunc("/api/auth/logout", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w, r)
+		if r.Method == http.MethodOptions {
+			return
+		}
+		api.HandleLogout(w, r)
+	})
+
 	// --- Widget Routes ---
 	http.HandleFunc("/api/widgets", api.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w, r)

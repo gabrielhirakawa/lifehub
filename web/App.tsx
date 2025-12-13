@@ -73,16 +73,24 @@ const App: React.FC = () => {
 
     // Fetch widgets from API on mount
     const loadWidgets = async () => {
-      const data = await api.getWidgets();
-      setWidgets(data);
+      try {
+        const data = await api.getWidgets();
+        setWidgets(data);
+      } catch (error) {
+        if ((error as Error).message === "Unauthorized") {
+          handleLogout();
+        }
+      }
     };
-    loadWidgets();
+    if (isAuthenticated) {
+      loadWidgets();
+    }
 
     // Check notification permission
     if ("Notification" in window) {
       setNotificationPermission(Notification.permission);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -215,7 +223,8 @@ const App: React.FC = () => {
     localStorage.setItem("lifehub_username", user);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await api.logout();
     setIsAuthenticated(false);
     setUsername("User");
     localStorage.removeItem("lifehub_auth");

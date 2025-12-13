@@ -8,11 +8,17 @@ export const api = {
       const response = await fetch(`${API_BASE_URL}/widgets`, {
         credentials: "include",
       });
+      if (response.status === 401) {
+        throw new Error("Unauthorized");
+      }
       if (!response.ok) {
         throw new Error("Failed to fetch widgets");
       }
       return await response.json();
     } catch (error) {
+      if ((error as Error).message === "Unauthorized") {
+        throw error;
+      }
       console.error("Error fetching widgets:", error);
       return [];
     }
@@ -120,6 +126,17 @@ export const api = {
     } catch (error) {
       console.error("Error logging in:", error);
       return { success: false, message: "Network error" };
+    }
+  },
+
+  async logout(): Promise<void> {
+    try {
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("Error logging out:", error);
     }
   },
 

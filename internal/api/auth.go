@@ -128,3 +128,17 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		Username: req.Username,
 	})
 }
+
+// HandleLogout clears the auth cookie.
+func HandleLogout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "token",
+		Value:    "",
+		Expires:  time.Unix(0, 0),
+		HttpOnly: true,
+		Path:     "/",
+		MaxAge:   -1,
+	})
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(`{"success":true}`))
+}

@@ -59,6 +59,15 @@ A centralized personal dashboard designed to streamline your daily life by track
 - **Push**: Web Push Library (`webpush-go`)
 - **Architecture**: REST API
 
+## 🔒 Security & Privacy
+
+LifeHub was built with security in mind, ensuring you can self-host with confidence.
+
+- **Authentication**: We use **JWT (JSON Web Tokens)** stored in **HttpOnly Cookies**. This means the frontend JavaScript cannot access your session token, protecting you against XSS (Cross-Site Scripting) attacks.
+- **Zero-Config Security**: Critical secrets (like the JWT signing key and VAPID keys) are **automatically generated** securely on the first run and stored locally in the `data/` folder. No hardcoded secrets in the source code.
+- **Data Isolation**: The SQLite database is stored locally on your server (`data/lifehub.db`). It is not exposed to the network directly, and all API access is protected by authentication middleware.
+- **CORS Protection**: The backend is configured to only accept requests from trusted origins (like your frontend), preventing unauthorized websites from making requests to your dashboard.
+
 ## Project Structure
 
 ```
