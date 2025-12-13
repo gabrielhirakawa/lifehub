@@ -33,7 +33,15 @@ func InitDB() error {
 
 	log.Println("Connected to SQLite database at", dbPath)
 
-	return createTables()
+	if err := createTables(); err != nil {
+		return err
+	}
+
+	if err := InitUsersTable(); err != nil {
+		return fmt.Errorf("failed to create users table: %w", err)
+	}
+
+	return nil
 }
 
 func createTables() error {

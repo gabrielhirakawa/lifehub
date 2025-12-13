@@ -25,6 +25,32 @@ func main() {
 		w.Write([]byte("LifeHub Backend is running!"))
 	})
 
+	// --- Auth Routes ---
+	http.HandleFunc("/api/auth/status", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
+		if r.Method == http.MethodOptions {
+			return
+		}
+		api.HandleAuthStatus(w, r)
+	})
+
+	http.HandleFunc("/api/auth/register", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
+		if r.Method == http.MethodOptions {
+			return
+		}
+		api.HandleRegister(w, r)
+	})
+
+	http.HandleFunc("/api/auth/login", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
+		if r.Method == http.MethodOptions {
+			return
+		}
+		api.HandleLogin(w, r)
+	})
+
+	// --- Widget Routes ---
 	http.HandleFunc("/api/widgets", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w)
 		if r.Method == http.MethodOptions {

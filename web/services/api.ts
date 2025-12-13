@@ -63,4 +63,53 @@ export const api = {
       return null;
     }
   },
+
+  // --- Auth ---
+  async checkAuthStatus(): Promise<{ registered: boolean }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/status`);
+      if (!response.ok) throw new Error("Failed to check auth status");
+      return await response.json();
+    } catch (error) {
+      console.error("Error checking auth status:", error);
+      return { registered: false };
+    }
+  },
+
+  async register(
+    username: string,
+    password: string
+  ): Promise<{ success: boolean; message?: string; username?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      return await response.json();
+    } catch (error) {
+      console.error("Error registering:", error);
+      return { success: false, message: "Network error" };
+    }
+  },
+
+  async login(
+    username: string,
+    password: string
+  ): Promise<{ success: boolean; message?: string; username?: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      if (response.status === 401) {
+        return { success: false, message: "Invalid credentials" };
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error logging in:", error);
+      return { success: false, message: "Network error" };
+    }
+  },
 };

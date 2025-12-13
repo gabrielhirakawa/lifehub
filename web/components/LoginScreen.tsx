@@ -1,36 +1,45 @@
-import React, { useState } from 'react';
-import { User, Lock, ArrowRight, LayoutDashboard, AlertCircle } from 'lucide-react';
+import React, { useState } from "react";
+import {
+  User,
+  Lock,
+  ArrowRight,
+  LayoutDashboard,
+  AlertCircle,
+} from "lucide-react";
+import { api } from "../services/api";
 
 interface LoginScreenProps {
-  onLogin: () => void;
+  onLogin: (username: string) => void;
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
-    // Simulate network delay for better UX feel
-    setTimeout(() => {
-      if (username === 'admin' && password === 'admin') {
-        onLogin();
+    try {
+      const result = await api.login(username, password);
+      if (result.success) {
+        onLogin(result.username || username);
       } else {
-        setError('Invalid username or password');
-        setLoading(false);
+        setError(result.message || "Invalid username or password");
       }
-    }, 600);
+    } catch (err) {
+      setError("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 transition-colors duration-300">
       <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in-95 duration-300">
-        
         {/* Header Section */}
         <div className="bg-indigo-600 p-8 text-center relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-full bg-white/10 opacity-30 transform -skew-y-12 scale-150 origin-bottom-left"></div>
@@ -38,8 +47,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-indigo-600 shadow-lg mb-4">
               <LayoutDashboard size={24} />
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">LifeHub</h1>
-            <p className="text-indigo-100 text-sm mt-1">Your personal dashboard</p>
+            <h1 className="text-2xl font-bold text-white tracking-tight">
+              LifeHub
+            </h1>
+            <p className="text-indigo-100 text-sm mt-1">
+              Your personal dashboard
+            </p>
           </div>
         </div>
 
@@ -54,7 +67,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Username</label>
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">
+                Username
+              </label>
               <div className="relative group">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
                   <User size={18} />
@@ -71,7 +86,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Password</label>
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">
+                Password
+              </label>
               <div className="relative group">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
                   <Lock size={18} />
@@ -103,7 +120,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
           <div className="mt-6 text-center">
             <p className="text-xs text-slate-400">
-              Default credentials: <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded text-slate-600 dark:text-slate-300">admin</code> / <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded text-slate-600 dark:text-slate-300">admin</code>
+              Default credentials:{" "}
+              <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded text-slate-600 dark:text-slate-300">
+                admin
+              </code>{" "}
+              /{" "}
+              <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded text-slate-600 dark:text-slate-300">
+                admin
+              </code>
             </p>
           </div>
         </div>

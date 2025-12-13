@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Dashboard from "./components/Dashboard";
 import LoginScreen from "./components/LoginScreen";
+import RegisterScreen from "./components/RegisterScreen";
 import { WidgetData, WidgetType } from "./types";
 import {
   LayoutDashboard,
@@ -22,6 +23,10 @@ const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     return localStorage.getItem("lifehub_auth") === "true";
   });
+  const [username, setUsername] = useState(() => {
+    return localStorage.getItem("lifehub_username") || "User";
+  });
+  const [isRegistered, setIsRegistered] = useState<boolean | null>(null); // null = loading
 
   const [widgets, setWidgets] = useState<WidgetData[]>([]);
 
@@ -40,6 +45,13 @@ const App: React.FC = () => {
 
   // --- Effects ---
   useEffect(() => {
+    // Check auth status
+    const checkAuth = async () => {
+      const status = await api.checkAuthStatus();
+      setIsRegistered(status.registered);
+    };
+    checkAuth();
+
     // Fetch widgets from API on mount
     const loadWidgets = async () => {
       const data = await api.getWidgets();
@@ -92,14 +104,18 @@ const App: React.FC = () => {
   };
 
   // --- Handlers ---
-  const handleLogin = () => {
+  const handleLogin = (user: string) => {
     setIsAuthenticated(true);
+    setUsername(user);
     localStorage.setItem("lifehub_auth", "true");
+    localStorage.setItem("lifehub_username", user);
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    setUsername("User");
     localStorage.removeItem("lifehub_auth");
+    localStorage.removeItem("lifehub_username");
   };
 
   const handleAddWidget = async (type: WidgetType) => {
@@ -226,6 +242,37 @@ const App: React.FC = () => {
       </button>
     );
   };
+
+  // If loading auth status
+  if (isRegistered === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  // If not registered, show register screen
+  if (!isRegistered) {
+    return (
+      <>
+        <div className="fixed top-4 right-4 z-50">
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className="p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors shadow-sm"
+          >
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+        </div>
+        <RegisterScreen
+          onRegisterSuccess={(user) => {
+            setIsRegistered(true);
+            handleLogin(user);
+          }}
+        />
+      </>
+    );
+  }
 
   // If not authenticated, show login screen
   if (!isAuthenticated) {
@@ -369,7 +416,7 @@ const App: React.FC = () => {
         <div className="mb-8 flex justify-between items-end">
           <div>
             <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
-              Hello, User
+              Hello, {username}
             </h2>
             <p className="text-slate-500 dark:text-slate-400">
               Here's what's happening in your life today.
