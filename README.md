@@ -4,38 +4,41 @@ A centralized personal dashboard designed to streamline your daily life by track
 
 ![Banner](./web/img/lifehub_screen.png)
 
-## Features
+## Widgets
 
-### 📅 Daily Tasks
+### 🏠 General
 
-- **Date-based Tracking**: Manage tasks for Today, Yesterday, and the Day Before.
-- **Smart Rollover**: Unfinished tasks from previous days automatically roll over to "Today" with an overdue indicator.
+- **Daily Tasks**: Manage tasks for Today, Yesterday, and the Day Before with smart rollover.
+- **Notes**: Tabbed interface for multiple notes.
+- **Quick Links**: Save and organize frequently visited websites.
 
-### 💧 Hydration Tracker
+### ⚡ Productivity
 
-- **History Log**: Track water intake across multiple days.
-- **Visual Progress**: Dynamic water level visualization.
+- **Kanban Board**: Drag-and-drop style task management (To Do, Doing, Done).
+- **Reminders**: Track upcoming events and deadlines.
+- **Pomodoro Timer**: Focus timer with work/break intervals.
 
-### 🤖 AI Coach (Gemini)
+### 🩸 Health
 
+- **Hydration Tracker**: Track water intake with history and visual progress.
+- **Gym Tracker**: Log workouts and track history.
+- **Diet Tracker**: Monitor daily calorie and macro intake.
+
+### 🤖 AI Coach
+
+- **Multi-Provider Support**: Compatible with Google Gemini, OpenAI, and Anthropic.
 - **Context Aware**: The AI analyzes your current tasks, hydration, and notes to provide personalized advice.
 - **Chat Interface**: Interact directly with your data.
 
-### ⚡ Productivity Tools
+## System Features
 
-- **Kanban Board**: Drag-and-drop style task management (To Do, Doing, Done).
-- **Notes**: Tabbed interface for multiple notes.
-- **Reminders**: Track upcoming events and deadlines.
-- **Pomodoro Timer**: Focus timer with work/break intervals.
-- **Gym Tracker**: Log workouts and track history.
-
-### � Push Notifications
+### 🔔 Push Notifications
 
 - **Web Push API**: Receive notifications even when the app is closed.
 - **VAPID Security**: Secure communication between your server and the browser.
 - **Multi-User**: Notifications are delivered only to the authenticated user.
 
-### �💾 Data Persistence
+### 💾 Data Persistence
 
 - **Self-Hosted Backend**: Data is stored locally in a SQLite database.
 - **Multi-User Support**: Secure login with JWT and data isolation per user.
@@ -48,7 +51,7 @@ A centralized personal dashboard designed to streamline your daily life by track
 - **Framework**: React 19, TypeScript, Vite
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
-- **AI**: Google GenAI SDK (`@google/genai`)
+- **AI**: Google GenAI SDK, OpenAI API, Anthropic API
 - **PWA**: Service Worker for offline support and notifications
 
 ### Backend (`/cmd`, `/internal`)
@@ -102,6 +105,7 @@ go run cmd/server/main.go
 
 The server will start on `http://localhost:8080`.
 _Note: On first run, it will generate `data/vapid_keys.json` for push notifications._
+go run cmd/server/main.go
 
 ### 2. Frontend Setup
 
