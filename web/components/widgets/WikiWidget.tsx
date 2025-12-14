@@ -105,33 +105,35 @@ const WikiWidget: React.FC<WikiWidgetProps> = ({ data, onUpdate }) => {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Top Bar / Page List */}
-      <div className="w-full border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex items-center overflow-x-auto no-scrollbar">
-        <div className="flex items-center p-2 gap-2">
-          {wikiData.pages.map((page) => (
-            <div
-              key={page.id}
-              onClick={() =>
-                updateWikiData({ ...wikiData, activePageId: page.id })
-              }
-              className={`group flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm cursor-pointer transition-colors whitespace-nowrap border ${
-                page.id === activePage.id
-                  ? "bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm border-slate-200 dark:border-slate-700"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 border-transparent"
-              }`}
-            >
+      <div className="flex items-center gap-1 border-b border-slate-200 dark:border-slate-700 overflow-x-auto custom-scrollbar pb-1 mb-2">
+        {wikiData.pages.map((page) => (
+          <div
+            key={page.id}
+            onClick={() =>
+              updateWikiData({ ...wikiData, activePageId: page.id })
+            }
+            className={`group flex items-center gap-2 px-3 py-1.5 rounded-t-lg text-xs font-medium cursor-pointer transition-colors border-b-2 whitespace-nowrap min-w-[100px] justify-between ${
+              page.id === activePage.id
+                ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 border-indigo-500"
+                : "text-slate-500 dark:text-slate-400 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800"
+            }`}
+          >
+            <div className="flex items-center gap-2 overflow-hidden">
               <FileText
-                size={14}
+                size={12}
                 className={
                   page.id === activePage.id
                     ? "fill-indigo-100 dark:fill-indigo-900/30"
                     : ""
                 }
               />
-              <span className="max-w-[100px] truncate">{page.title}</span>
+              <span className="truncate">{page.title}</span>
+            </div>
 
+            <div className="flex items-center gap-1">
               {page.isPublic && (
                 <Globe
-                  size={12}
+                  size={10}
                   className="text-emerald-500"
                   title="Public Link Active"
                 />
@@ -145,19 +147,18 @@ const WikiWidget: React.FC<WikiWidgetProps> = ({ data, onUpdate }) => {
                     : "opacity-0 group-hover:opacity-100"
                 }`}
               >
-                <Trash2 size={12} />
+                <Trash2 size={10} />
               </button>
             </div>
-          ))}
-
-          <button
-            onClick={handleAddPage}
-            className="p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-500 transition-colors"
-            title="Add Page"
-          >
-            <Plus size={16} />
-          </button>
-        </div>
+          </div>
+        ))}
+        <button
+          onClick={handleAddPage}
+          className="px-2 py-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-t-lg transition-colors"
+          title="New Page"
+        >
+          <Plus size={14} />
+        </button>
       </div>
 
       {/* Main Editor Area */}
