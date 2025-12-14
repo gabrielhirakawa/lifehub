@@ -27,12 +27,12 @@
       - Entradas e Saídas manuais.
       - Categorização simples (Alimentação, Transporte, Lazer, etc.).
       - Visualização de saldo mensal.
-    - [ ] **Widget Wiki (Markdown Avançado):**
-      - Editor Markdown com suporte a múltiplas abas.
-      - **Compartilhamento Público:** Botão para gerar link público (Read-Only) via UUID.
-      - **Identificação Visual:** Ícone (ex: globo) para abas públicas.
-      - **Frontend Dedicado:** Rota específica (ex: `/wiki/:uuid`) para renderização limpa da página compartilhada.
-      - **Backend:** Rotas públicas para servir o conteúdo sem autenticação via hash.
+    - [x] **Widget Wiki (Markdown Avançado):**
+      - [x] Editor Markdown com suporte a múltiplas abas.
+      - [x] **Compartilhamento Público:** Botão para gerar link público (Read-Only) via UUID.
+      - [x] **Identificação Visual:** Ícone (ex: globo) para abas públicas.
+      - [x] **Frontend Dedicado:** Rota específica (ex: `/wiki/:uuid`) para renderização limpa da página compartilhada.
+      - [x] **Backend:** Rotas públicas para servir o conteúdo sem autenticação via hash.
       - [ ] **Melhoria Markdown:** Adicionar suporte completo a Markdown (negrito, links, imagens, tabelas) usando `react-markdown` e `@tailwindcss/typography`.
     - [ ] Widget de Clima/Tempo.
 6.  **Melhorias de Funcionalidades:**
