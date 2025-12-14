@@ -18,7 +18,7 @@
     - Implementar persistência com SQLite (substituindo `localStorage`).
     - Criar endpoints para sincronização de dados dos widgets.
 2.  **Deployment (Self-Hosted):**
-    - Criar Dockerfile multi-stage para build do React e execução do binário Go.
+    - [x] Criar Dockerfile multi-stage para build do React e execução do binário Go.
     - Garantir compatibilidade com CasaOS/ZimaOS.
 3.  **Refatoração de Estado:** Migrar de `App.tsx` + `localStorage` para consumo da API.
 4.  **Validação de Dados:** Implementar validação (Zod) no frontend e validação correspondente no backend.

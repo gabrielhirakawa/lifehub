@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/gabrielhirakawa/lifehub/internal/api"
 	"github.com/gabrielhirakawa/lifehub/internal/database"
@@ -46,6 +48,22 @@ func main() {
 			return
 		}
 		api.HandleRegister(w, r)
+	})
+
+	http.HandleFunc("/api/auth/login", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w, r)
+		if r.Method == http.MethodOptions {
+			return
+		}
+		api.HandleLogin(w, r)
+	})
+
+	http.HandleFunc("/api/auth/logout", func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w, r)
+		if r.Method == http.MethodOptions {
+			return
+		}
+		api.HandleLogout(w, r)
 	})
 
 	// --- Public Routes ---
@@ -112,6 +130,28 @@ func main() {
 		api.HandleSendNotification(w, r)
 	}))
 
+	// --- Static Files (Frontend) ---
+	// Serve static files from the "dist" directory
+	// This handles SPA routing by serving index.html for non-file requests
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		// Define the static directory
+		staticDir := "./dist"
+
+		// Clean the path to prevent directory traversal
+		path := filepath.Join(staticDir, filepath.Clean(r.URL.Path))
+
+		// Check if the file exists
+		info, err := os.Stat(path)
+		if os.IsNotExist(err) || info.IsDir() {
+			// If file doesn't exist or is a directory, serve index.html (SPA fallback)
+			http.ServeFile(w, r, filepath.Join(staticDir, "index.html"))
+			return
+		}
+
+		// Serve the actual file
+		http.ServeFile(w, r, path)
+	})
+
 	if err := http.ListenAndServe(port, nil); err != nil {
 		log.Fatal(err)
 	}
@@ -122,6 +162,8 @@ func enableCors(w *http.ResponseWriter, r *http.Request) {
 	allowedOrigins := map[string]bool{
 		"http://localhost:3000": true,
 		"http://127.0.0.1:3000": true,
+		"http://127.0.0.1:8080": true,
+		"http://localhost:8080": true,
 	}
 
 	origin := r.Header.Get("Origin")

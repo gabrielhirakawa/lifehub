@@ -1,0 +1,9 @@
+node_modules
+web/node_modules
+web/dist
+data/*.db
+data/jwt_secret
+data/vapid_keys.json
+.git
+.vscode
+.DS_Store
