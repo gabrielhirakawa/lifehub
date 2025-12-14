@@ -78,55 +78,66 @@ func main() {
 	// --- Widget Routes ---
 	http.HandleFunc("/api/widgets", api.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w, r)
+		if r.Method == http.MethodOptions {
+			return
+		}
 		api.HandleGetWidgets(w, r)
 	}))
 
 	// Handle /api/widgets/{id} for fetching single widget
 	http.HandleFunc("/api/widgets/", api.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w, r)
-		// Check if it's a delete request or get by ID
-		if r.Method == http.MethodDelete {
-			// This path might conflict if not careful, but let's see.
-			// Actually, /api/widgets/delete/ is more specific so it should match first if registered.
-			// But wait, http.ServeMux matches longest pattern.
-			// /api/widgets/delete/ is longer than /api/widgets/
-			// So we are safe.
-			// But we need to distinguish between GET /api/widgets (list) and GET /api/widgets/{id}
-			// The pattern "/api/widgets" matches exact.
-			// The pattern "/api/widgets/" matches prefix.
-			
-			// So if we request /api/widgets, it goes to the first handler.
-			// If we request /api/widgets/TODO, it goes here.
+		if r.Method == http.MethodOptions {
+			return
+		}
+		// Only handle GET requests here (for fetching by ID)
+		// DELETE requests go to /api/widgets/delete/
+		if r.Method == http.MethodGet {
 			api.HandleGetWidgetByID(w, r)
-		} else if r.Method == http.MethodGet {
-			api.HandleGetWidgetByID(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	}))
 
 	http.HandleFunc("/api/widgets/save", api.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w, r)
+		if r.Method == http.MethodOptions {
+			return
+		}
 		api.HandleSaveWidget(w, r)
 	}))
 
 	// Handle /api/widgets/delete/{id}
 	http.HandleFunc("/api/widgets/delete/", api.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w, r)
+		if r.Method == http.MethodOptions {
+			return
+		}
 		api.HandleDeleteWidget(w, r)
 	}))
 
 	// --- Push Notification Routes ---
 	http.HandleFunc("/api/push/vapid-key", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w, r)
+		if r.Method == http.MethodOptions {
+			return
+		}
 		api.HandleGetVAPIDKey(w, r)
 	})
 
 	http.HandleFunc("/api/push/subscribe", api.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w, r)
+		if r.Method == http.MethodOptions {
+			return
+		}
 		api.HandleSubscribe(w, r)
 	}))
 
 	http.HandleFunc("/api/push/send-test", api.AuthMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w, r)
+		if r.Method == http.MethodOptions {
+			return
+		}
 		api.HandleSendNotification(w, r)
 	}))
 
@@ -158,20 +169,9 @@ func main() {
 }
 
 func enableCors(w *http.ResponseWriter, r *http.Request) {
-	// Allow specific origins for development
-	allowedOrigins := map[string]bool{
-		"http://localhost:3000": true,
-		"http://127.0.0.1:3000": true,
-		"http://127.0.0.1:8080": true,
-		"http://localhost:8080": true,
-	}
-
 	origin := r.Header.Get("Origin")
-	if allowedOrigins[origin] {
+	if origin != "" {
 		(*w).Header().Set("Access-Control-Allow-Origin", origin)
-	} else {
-		// Default to localhost:3000 if origin is missing or not in list (fallback)
-		(*w).Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 	}
 
 	(*w).Header().Set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")

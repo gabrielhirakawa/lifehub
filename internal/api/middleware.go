@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -97,11 +98,17 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		})
 
 		if err != nil {
-			if err == jwt.ErrSignatureInvalid {
+			if errors.Is(err, jwt.ErrSignatureInvalid) {
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
 			}
-			http.Error(w, "Bad Request", http.StatusBadRequest)
+			if errors.Is(err, jwt.ErrTokenExpired) {
+				http.Error(w, "Token expired", http.StatusUnauthorized)
+				return
+			}
+			
+			log.Printf("AuthMiddleware JWT Error: %v", err)
+			http.Error(w, "Bad Request: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
