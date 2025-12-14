@@ -147,6 +147,8 @@ export interface WikiPage {
   content: string; // Markdown content
   isPublic?: boolean; // For future sharing feature
   publicId?: string; // UUID for public access
+  author?: string;
+  date?: string;
 }
 
 export interface WikiData {

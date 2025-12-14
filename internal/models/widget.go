@@ -19,7 +19,30 @@ const (
 	WidgetTypeLinks       WidgetType = "LINKS"
 	WidgetTypePomodoro    WidgetType = "POMODORO"
 	WidgetTypeDiet        WidgetType = "DIET"
+	WidgetTypeWiki        WidgetType = "WIKI"
 )
+
+// WikiPage represents a single page in the Wiki widget
+type WikiPage struct {
+	ID       string `json:"id"`
+	Title    string `json:"title"`
+	Content  string `json:"content"`
+	IsPublic bool   `json:"isPublic"`
+	PublicID string `json:"publicId,omitempty"`
+	Author   string `json:"author,omitempty"`
+	Date     string `json:"date,omitempty"`
+}
+
+// WikiData represents the data structure for the Wiki widget
+type WikiData struct {
+	Pages        []WikiPage `json:"pages"`
+	ActivePageID string     `json:"activePageId,omitempty"`
+}
+
+// WidgetContentWrapper is a helper to unmarshal the raw content
+type WidgetContentWrapper struct {
+	Wiki *WikiData `json:"wiki,omitempty"`
+}
 
 // Widget represents a dashboard widget.
 // It mirrors the frontend WidgetData interface.

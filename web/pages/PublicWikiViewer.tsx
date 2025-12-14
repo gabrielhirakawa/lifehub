@@ -7,6 +7,8 @@ interface WikiPage {
   id: string;
   title: string;
   content: string;
+  author?: string;
+  date?: string;
 }
 
 const PublicWikiViewer: React.FC = () => {
@@ -18,27 +20,17 @@ const PublicWikiViewer: React.FC = () => {
   useEffect(() => {
     const fetchPage = async () => {
       try {
-        // TODO: Replace with actual API call
-        // const response = await fetch(`/api/public/wiki/${id}`);
-        // const data = await response.json();
-
-        // Mock simulation
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        if (id === "demo") {
-          setPage({
-            id: "demo",
-            title: "Demo Public Page",
-            content:
-              "# Hello World\nThis is a public wiki page shared from LifeHub.\n\n- Item 1\n- Item 2",
-          });
-        } else {
-          // For now, since we don't have the backend, we can't really fetch.
-          // We'll just show a "Not Found" or a placeholder.
-          setError("Public wiki access is not yet implemented on the backend.");
+        const response = await fetch(`/api/public/wiki/${id}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error("Page not found");
+          }
+          throw new Error("Failed to fetch page");
         }
+        const data = await response.json();
+        setPage(data);
       } catch (err) {
-        setError("Failed to load page.");
+        setError(err instanceof Error ? err.message : "Failed to load page.");
       } finally {
         setLoading(false);
       }
@@ -92,7 +84,13 @@ const PublicWikiViewer: React.FC = () => {
                 {page.title}
               </h1>
               <p className="text-sm text-slate-500 mt-1">
-                Published via LifeHub
+                Published via LifeHub {page.author && `by ${page.author}`}{" "}
+                {page.date &&
+                  `on ${new Date(page.date).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}`}
               </p>
             </div>
           </div>

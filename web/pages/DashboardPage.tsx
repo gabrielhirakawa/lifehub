@@ -526,6 +526,7 @@ const DashboardPage: React.FC = () => {
           onDeleteWidget={handleDeleteWidget}
           onReorderWidgets={handleReorderWidgets}
           isEditMode={isEditMode}
+          username={username}
         />
       </main>
 

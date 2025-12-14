@@ -34,6 +34,7 @@ interface DashboardProps {
   onDeleteWidget: (id: string) => void;
   onReorderWidgets: (widgets: WidgetData[]) => void;
   isEditMode: boolean;
+  username?: string;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
@@ -42,6 +43,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   onDeleteWidget,
   onReorderWidgets,
   isEditMode,
+  username,
 }) => {
   const [activeResizeMenu, setActiveResizeMenu] = useState<string | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -407,6 +409,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <WikiWidget
                   data={widget}
                   onUpdate={(d) => updateWidgetData(widget.id, d)}
+                  username={username}
                 />
               )}
             </div>

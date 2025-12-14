@@ -48,20 +48,13 @@ func main() {
 		api.HandleRegister(w, r)
 	})
 
-	http.HandleFunc("/api/auth/login", func(w http.ResponseWriter, r *http.Request) {
+	// --- Public Routes ---
+	http.HandleFunc("/api/public/wiki/", func(w http.ResponseWriter, r *http.Request) {
 		enableCors(&w, r)
 		if r.Method == http.MethodOptions {
 			return
 		}
-		api.HandleLogin(w, r)
-	})
-
-	http.HandleFunc("/api/auth/logout", func(w http.ResponseWriter, r *http.Request) {
-		enableCors(&w, r)
-		if r.Method == http.MethodOptions {
-			return
-		}
-		api.HandleLogout(w, r)
+		api.HandleGetPublicWikiPage(w, r)
 	})
 
 	// --- Widget Routes ---

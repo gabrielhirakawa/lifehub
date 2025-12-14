@@ -8,14 +8,21 @@ import {
   Edit2,
   Eye,
   Share2,
+  Sparkles,
 } from "lucide-react";
+import Toast, { ToastType } from "../Toast";
 
 interface WikiWidgetProps {
   data: WidgetData;
   onUpdate: (updatedData: WidgetData) => void;
+  username?: string;
 }
 
-const WikiWidget: React.FC<WikiWidgetProps> = ({ data, onUpdate }) => {
+const WikiWidget: React.FC<WikiWidgetProps> = ({
+  data,
+  onUpdate,
+  username,
+}) => {
   const wikiData: WikiData = data.content?.wiki || {
     pages: [],
     activePageId: undefined,
@@ -29,6 +36,8 @@ const WikiWidget: React.FC<WikiWidgetProps> = ({ data, onUpdate }) => {
         title: "Home",
         content: "# Welcome to your Wiki\n\nStart writing here...",
         isPublic: false,
+        author: username || "User",
+        date: new Date().toISOString(),
       };
       updateWikiData({
         pages: [initialPage],
@@ -37,10 +46,37 @@ const WikiWidget: React.FC<WikiWidgetProps> = ({ data, onUpdate }) => {
     }
   }, []);
 
+  // Backfill missing metadata for existing pages
+  useEffect(() => {
+    let hasUpdates = false;
+    const updatedPages = wikiData.pages.map((p) => {
+      if (!p.author || !p.date) {
+        hasUpdates = true;
+        return {
+          ...p,
+          author: p.author || username || "User",
+          date: p.date || new Date().toISOString(),
+        };
+      }
+      return p;
+    });
+
+    if (hasUpdates) {
+      updateWikiData({
+        ...wikiData,
+        pages: updatedPages,
+      });
+    }
+  }, [username, wikiData.pages.length]); // Check when pages change or username loads
+
   const activePage =
     wikiData.pages.find((p) => p.id === wikiData.activePageId) ||
     wikiData.pages[0];
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: ToastType;
+  } | null>(null);
 
   const updateWikiData = (newData: WikiData) => {
     onUpdate({
@@ -55,6 +91,8 @@ const WikiWidget: React.FC<WikiWidgetProps> = ({ data, onUpdate }) => {
       title: "New Page",
       content: "# New Page\n",
       isPublic: false,
+      author: username || "User",
+      date: new Date().toISOString(),
     };
     updateWikiData({
       pages: [...wikiData.pages, newPage],
@@ -89,15 +127,29 @@ const WikiWidget: React.FC<WikiWidgetProps> = ({ data, onUpdate }) => {
     if (!page) return;
 
     // If turning on public, generate UUID if not exists
+    const willBePublic = !page.isPublic;
     const updates: Partial<WikiPage> = {
-      isPublic: !page.isPublic,
+      isPublic: willBePublic,
     };
 
-    if (!page.isPublic && !page.publicId) {
-      updates.publicId = crypto.randomUUID();
+    let publicId = page.publicId;
+    if (willBePublic && !publicId) {
+      publicId = crypto.randomUUID();
+      updates.publicId = publicId;
     }
 
     handleUpdatePage(id, updates);
+
+    if (willBePublic) {
+      const url = `${window.location.origin}/wiki/${publicId}`;
+      navigator.clipboard.writeText(url);
+      setToast({
+        message: "Public link copied to clipboard!",
+        type: "success",
+      });
+    } else {
+      setToast({ message: "Page is now private.", type: "info" });
+    }
   };
 
   if (!activePage) return <div className="p-4 text-slate-500">Loading...</div>;
@@ -186,7 +238,7 @@ const WikiWidget: React.FC<WikiWidgetProps> = ({ data, onUpdate }) => {
               title={
                 activePage.isPublic
                   ? "Public Link Active (Click to disable)"
-                  : "Make Public"
+                  : "Make Public & Copy Link"
               }
             >
               <Share2 size={16} />
@@ -203,7 +255,7 @@ const WikiWidget: React.FC<WikiWidgetProps> = ({ data, onUpdate }) => {
               }`}
               title={isPreviewMode ? "Edit Mode" : "Preview Mode"}
             >
-              {isPreviewMode ? <Edit2 size={16} /> : <Eye size={16} />}
+              {isPreviewMode ? <Edit2 size={16} /> : <Sparkles size={16} />}
             </button>
           </div>
         </div>
@@ -266,6 +318,13 @@ const WikiWidget: React.FC<WikiWidgetProps> = ({ data, onUpdate }) => {
           </div>
         )}
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 };
